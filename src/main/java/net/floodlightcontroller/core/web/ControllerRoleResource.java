@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.dsc.ha.HARole;
+import net.dsc.ha.RoleInfo;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.annotations.LogMessageDoc;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.RoleInfo;
 
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;

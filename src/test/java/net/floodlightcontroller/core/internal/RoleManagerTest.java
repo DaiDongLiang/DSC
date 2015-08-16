@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import net.dsc.ha.HARole;
 import net.floodlightcontroller.test.FloodlightTestCase;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -37,7 +38,6 @@ import net.floodlightcontroller.core.IShutdownService;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
 import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugcounter.MockDebugCounterService;
-import net.floodlightcontroller.ha.HARole;
 
 public class RoleManagerTest extends FloodlightTestCase {
     private Controller controller;

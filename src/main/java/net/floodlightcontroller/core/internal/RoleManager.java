@@ -6,13 +6,13 @@ import javax.annotation.Nonnull;
 
 import java.util.Date;
 
+import net.dsc.ha.HARole;
+import net.dsc.ha.IHAListener;
+import net.dsc.ha.RoleInfo;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitchBackend;
 import net.floodlightcontroller.core.IShutdownService;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.IHAListener;
-import net.floodlightcontroller.ha.RoleInfo;
 
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;

@@ -1,15 +1,15 @@
-package net.floodlightcontroller.hazelcast;
+package net.dsc.hazelcast;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.dsc.hazelcast.listener.ControllerMembershipListener;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.hazelcast.listener.ControllerMembershipListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

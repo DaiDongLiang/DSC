@@ -14,7 +14,7 @@
  *    under the License.
  **/
 
-package net.floodlightcontroller.ha;
+package net.dsc.ha;
 
 import java.util.Map;
 

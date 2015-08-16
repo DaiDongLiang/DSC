@@ -23,6 +23,9 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import net.dsc.ha.HARole;
+import net.dsc.ha.IHAListener;
+import net.dsc.ha.RoleInfo;
 import net.floodlightcontroller.test.FloodlightTestCase;
 
 import java.util.List;
@@ -40,9 +43,6 @@ import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugcounter.DebugCounterServiceImpl;
 import net.floodlightcontroller.debugevent.DebugEventService;
 import net.floodlightcontroller.debugevent.IDebugEventService;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.IHAListener;
-import net.floodlightcontroller.ha.RoleInfo;
 import net.floodlightcontroller.packet.ARP;
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.IPacket;

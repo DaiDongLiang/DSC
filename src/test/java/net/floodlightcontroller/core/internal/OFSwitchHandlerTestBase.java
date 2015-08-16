@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import net.dsc.ha.HARole;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitch.SwitchStatus;
 import net.floodlightcontroller.core.IOFSwitchBackend;
@@ -43,7 +44,6 @@ import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.Quarantin
 import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitAppHandshakeState;
 import net.floodlightcontroller.debugcounter.DebugCounterServiceImpl;
 import net.floodlightcontroller.debugcounter.IDebugCounterService;
-import net.floodlightcontroller.ha.HARole;
 
 import org.projectfloodlight.openflow.protocol.OFBadActionCode;
 import org.projectfloodlight.openflow.protocol.OFBadRequestCode;

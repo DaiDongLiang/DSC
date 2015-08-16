@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 
 import org.jboss.netty.util.Timer;
 
+import net.dsc.ha.HARole;
 import net.floodlightcontroller.core.IOFConnection;
 import net.floodlightcontroller.core.IOFConnectionBackend;
 import net.floodlightcontroller.core.IOFSwitch;
@@ -23,7 +24,6 @@ import net.floodlightcontroller.core.SwitchDescription;
 import net.floodlightcontroller.core.annotations.LogMessageDoc;
 import net.floodlightcontroller.core.annotations.LogMessageDocs;
 import net.floodlightcontroller.core.internal.OFSwitchAppHandshakePlugin.PluginResultType;
-import net.floodlightcontroller.ha.HARole;
 
 import org.projectfloodlight.openflow.protocol.OFBadRequestCode;
 import org.projectfloodlight.openflow.protocol.OFBarrierReply;

@@ -14,6 +14,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 
+import net.dsc.ha.HAListenerTypeMarker;
+import net.dsc.ha.HARole;
+import net.dsc.ha.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFConnectionBackend;
@@ -40,9 +43,6 @@ import net.floodlightcontroller.debugevent.IDebugEventService;
 import net.floodlightcontroller.debugevent.IDebugEventService.EventType;
 import net.floodlightcontroller.debugevent.IEventCategory;
 import net.floodlightcontroller.debugevent.MockDebugEventService;
-import net.floodlightcontroller.ha.HAListenerTypeMarker;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.IHAListener;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipelineFactory;

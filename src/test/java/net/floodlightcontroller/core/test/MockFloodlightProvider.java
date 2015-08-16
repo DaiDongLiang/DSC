@@ -35,6 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.dsc.ha.ControllerModel;
+import net.dsc.ha.HAListenerTypeMarker;
+import net.dsc.ha.HARole;
+import net.dsc.ha.IHAListener;
+import net.dsc.ha.RoleInfo;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IInfoProvider;
@@ -49,11 +54,6 @@ import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
 import net.floodlightcontroller.core.util.ListenerDispatcher;
-import net.floodlightcontroller.ha.ControllerModel;
-import net.floodlightcontroller.ha.HAListenerTypeMarker;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.IHAListener;
-import net.floodlightcontroller.ha.RoleInfo;
 import net.floodlightcontroller.packet.Ethernet;
 
 import org.jboss.netty.util.Timer;

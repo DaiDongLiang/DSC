@@ -1,4 +1,4 @@
-package net.floodlightcontroller.ha;
+package net.dsc.ha;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.hazelcast.IHazelcastService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

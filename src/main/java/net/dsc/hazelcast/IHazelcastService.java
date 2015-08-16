@@ -1,4 +1,4 @@
-package net.floodlightcontroller.hazelcast;
+package net.dsc.hazelcast;
 
 import net.floodlightcontroller.core.module.IFloodlightService;
 

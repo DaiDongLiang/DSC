@@ -1,4 +1,4 @@
-package net.floodlightcontroller.ha;
+package net.dsc.ha;
 
 import java.io.Serializable;
 

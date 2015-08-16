@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.dsc.ha.HARole;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IListener.Command;
@@ -73,7 +74,6 @@ import net.floodlightcontroller.devicemanager.internal.DeviceSyncRepresentation.
 import net.floodlightcontroller.devicemanager.test.MockEntityClassifier;
 import net.floodlightcontroller.devicemanager.test.MockEntityClassifierMac;
 import net.floodlightcontroller.devicemanager.test.MockFlexEntityClassifier;
-import net.floodlightcontroller.ha.HARole;
 import net.floodlightcontroller.packet.ARP;
 import net.floodlightcontroller.packet.Data;
 import net.floodlightcontroller.packet.Ethernet;

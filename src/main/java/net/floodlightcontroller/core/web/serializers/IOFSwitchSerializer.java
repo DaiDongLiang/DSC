@@ -38,9 +38,9 @@ import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.protocol.OFFlowWildcards;
 import org.projectfloodlight.openflow.protocol.OFVersion;
 
+import net.dsc.ha.HARole;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.SwitchDescription;
-import net.floodlightcontroller.ha.HARole;
 /**
  * Serialize a IOFSwitch for more readable information
  */

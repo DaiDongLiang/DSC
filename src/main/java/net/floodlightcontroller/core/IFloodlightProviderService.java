@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.dsc.ha.ControllerModel;
+import net.dsc.ha.HARole;
+import net.dsc.ha.IHAListener;
+import net.dsc.ha.RoleInfo;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
 import net.floodlightcontroller.core.internal.Controller.ModuleLoaderState;
 import net.floodlightcontroller.core.internal.RoleManager;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.ha.ControllerModel;
-import net.floodlightcontroller.ha.HARole;
-import net.floodlightcontroller.ha.IHAListener;
-import net.floodlightcontroller.ha.RoleInfo;
 import net.floodlightcontroller.packet.Ethernet;
 
 import org.jboss.netty.util.Timer;
