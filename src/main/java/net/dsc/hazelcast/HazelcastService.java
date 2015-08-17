@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.dsc.hazelcast.listener.ControllerMembershipListener;
+import net.dsc.hazelcast.message.FlowMessage;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
@@ -19,6 +20,7 @@ import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
+import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MultiMap;
 
 public class HazelcastService implements IHazelcastService,IFloodlightModule{
@@ -27,8 +29,8 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	private static final Logger log = LoggerFactory
 			.getLogger(HazelcastService.class);
 
-	HazelcastInstance hazelcastInstance = null;
-	HazelcastInstance client = null;
+	private HazelcastInstance hazelcastInstance = null;
+	private HazelcastInstance client = null;
 
 	@Override
 	public <K, V> IMap<K,V> getMap(String MapName) {
@@ -91,6 +93,12 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
 		HazelcastListenerManager.addMemberListener();
+	}
+	@Override
+	public void publshFlowMessage(FlowMessage flowMessage) {
+		ITopic<FlowMessage> topic =  client.getTopic(FlowMessageTopic);
+		topic.publish(flowMessage);
+		
 	}
 
 }

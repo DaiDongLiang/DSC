@@ -1,5 +1,6 @@
 package net.dsc.hazelcast;
 
+import net.dsc.hazelcast.message.FlowMessage;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
 import com.hazelcast.core.IList;
@@ -18,4 +19,6 @@ public interface IHazelcastService extends IFloodlightService{
 	public <T> IQueue<T> getQueue(String QueueName);
 	
 	public <T> IList<T>  getList(String ListName);
+	
+	public void publshFlowMessage(FlowMessage flowMessage);
 }
