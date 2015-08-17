@@ -79,7 +79,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
 		return l;
 	}
-	
+	//test
 	@Override
 	public void init(FloodlightModuleContext context)
 			throws FloodlightModuleException {
