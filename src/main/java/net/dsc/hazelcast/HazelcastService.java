@@ -22,6 +22,8 @@ import com.hazelcast.core.ISet;
 import com.hazelcast.core.MultiMap;
 
 public class HazelcastService implements IHazelcastService,IFloodlightModule{
+	public static final String FlowMessageTopic = "flowMessageTopic";
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(HazelcastService.class);
 
@@ -87,7 +89,8 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		hazelcastInstance.getCluster().addMembershipListener( new ControllerMembershipListener());
+		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
+		HazelcastListenerManager.addMemberListener();
 	}
 
 }
