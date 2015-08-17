@@ -1260,7 +1260,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 
 		@Override
 		void enterState(){
-			sendRoleRequest(roleManager.getOFControllerRole());
+			sendRoleRequest(roleManager.getOFControllerRole(getDpid()));
 		}
 	}
 

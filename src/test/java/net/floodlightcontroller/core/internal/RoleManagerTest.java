@@ -60,7 +60,7 @@ public class RoleManagerTest extends FloodlightTestCase {
 
 
         IShutdownService shutdownService = createMock(IShutdownService.class);
-        roleManager = new RoleManager(controller, shutdownService , role, "test");
+        roleManager = new RoleManager(controller, shutdownService , role, "test",null);
 
         // Make sure the desired role is set
         assertTrue(roleManager.getRole().equals(role));

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.hazelcast.core.IMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -63,10 +64,13 @@ public class RoleManager {
      * 角色管理器计数器
      */
     private final RoleManagerCounters counters;
-
+    /**
+     * 集群角色集合
+     */
+    private IMap<String, String> masterMap;
+    
     private static final Logger log =
             LoggerFactory.getLogger(RoleManager.class);
-
     /**
      * @param role initial role
      * @param roleChangeDescription initial value of the change description
@@ -75,18 +79,21 @@ public class RoleManager {
     public RoleManager(@Nonnull Controller controller,
             @Nonnull IShutdownService shutdownService,
             @Nonnull HARole role,
-            @Nonnull String roleChangeDescription) {
+            @Nonnull String roleChangeDescription,
+            @Nonnull IMap<String, String> map) {
         Preconditions.checkNotNull(controller, "controller must not be null");
         Preconditions.checkNotNull(role, "role must not be null");
         Preconditions.checkNotNull(roleChangeDescription, "roleChangeDescription must not be null");
         Preconditions.checkNotNull(shutdownService, "shutdownService must not be null");
-
+        Preconditions.checkNotNull(map, "mastermap must not be null");
+        
         this.currentRoleInfo = new RoleInfo(role,
                                        roleChangeDescription,
                                        new Date());
         this.controller = controller;
         this.shutdownService = shutdownService;
         this.counters = new RoleManagerCounters(controller.getDebugCounter());
+        this.masterMap=map;
     }
 
     /**
@@ -161,8 +168,12 @@ public class RoleManager {
         return currentRoleInfo.getRole();
     }
 
-    public synchronized OFControllerRole getOFControllerRole() {
-        return getRole().getOFRole();
+    public synchronized OFControllerRole getOFControllerRole(DatapathId dpid) {
+    	if(masterMap.containsKey(dpid)) 
+    		return OFControllerRole.ROLE_SLAVE;
+    	else
+    		return OFControllerRole.ROLE_MASTER;
+    			
     }
 
     /**
@@ -270,8 +281,12 @@ public class RoleManager {
                           this.role, this.role.getOFRole());
             }
 
-            for (OFSwitchHandshakeHandler h: controller.getSwitchService().getSwitchHandshakeHandlers())
-                h.sendRoleRequest(this.role.getOFRole());
+            for (OFSwitchHandshakeHandler h: controller.getSwitchService().getSwitchHandshakeHandlers()){
+            	if(masterMap.containsKey(h.getDpid()))
+            		h.sendRoleRequest(OFControllerRole.ROLE_SLAVE);
+            	else
+            		h.sendRoleRequest(OFControllerRole.ROLE_MASTER);
+            }
         }
     }
 

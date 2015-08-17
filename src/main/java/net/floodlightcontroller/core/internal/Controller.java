@@ -17,6 +17,8 @@
 
 package net.floodlightcontroller.core.internal;
 
+import static net.dsc.ha.HazelcastTableNameConstant.MASTER_MAP;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -41,6 +43,7 @@ import net.dsc.ha.HAListenerTypeMarker;
 import net.dsc.ha.HARole;
 import net.dsc.ha.IHAListener;
 import net.dsc.ha.RoleInfo;
+import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.ControllerId;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
@@ -88,6 +91,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.hazelcast.core.IMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -113,6 +117,8 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
      * ID和IP的映射
      */
     protected HashMap<String, String> controllerNodeIPsCache;
+    
+	private IMap<String, String> masterMap;
     /**
      * 集群监听器调度
      */
@@ -138,6 +144,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
 
     // Module dependencies
+    private IHazelcastService hazelcast;
     /**
      * 内部数据库
      */
@@ -833,7 +840,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         this.controllerNodeIPsCache = new HashMap<String, String>();
         this.updates = new LinkedBlockingQueue<IUpdate>();
         this.providerMap = new HashMap<String, List<IInfoProvider>>();
-        
+		masterMap = hazelcast.getMap(MASTER_MAP);
         
         setConfigParams(configParams);
 
@@ -843,7 +850,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
         this.roleManager = new RoleManager(this, this.shutdownService,
                                            this.notifiedRole,
-                                           INITIAL_ROLE_CHANGE_DESCRIPTION);
+                                           INITIAL_ROLE_CHANGE_DESCRIPTION,masterMap);
         this.timer = new HashedWheelTimer();
 
         // Switch Service Startup
@@ -1185,6 +1192,14 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     public ControllerCounters getCounters() {
         return this.counters;
     }
+
+	public IHazelcastService getHazelcast() {
+		return hazelcast;
+	}
+
+	public void setHazelcast(IHazelcastService hazelcast) {
+		this.hazelcast = hazelcast;
+	}
 }
 
 

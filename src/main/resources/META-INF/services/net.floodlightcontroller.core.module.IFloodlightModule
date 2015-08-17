@@ -27,5 +27,5 @@ net.floodlightcontroller.firewall.Firewall
 net.floodlightcontroller.accesscontrollist.ACL
 net.floodlightcontroller.dhcpserver.DHCPServer
 net.floodlightcontroller.learningswitch.LearningSwitch
-net.floodlightcontroller.ha.HAManager
-net.floodlightcontroller.hazelcast.HazelcastService
+net.dsc.ha.HAManager
+net.dsc.hazelcast.HazelcastService

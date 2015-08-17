@@ -1,5 +1,7 @@
 package net.floodlightcontroller.core.internal;
 
+import static net.dsc.ha.HazelcastTableNameConstant.*;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import java.util.concurrent.Executors;
 import net.dsc.ha.HAListenerTypeMarker;
 import net.dsc.ha.HARole;
 import net.dsc.ha.IHAListener;
+import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFConnectionBackend;
@@ -68,6 +71,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.hazelcast.core.IMap;
 
 /**
  * The Switch Manager class contains most of the code involved with dealing
@@ -103,7 +107,9 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 	private ConcurrentHashMap<DatapathId, OFSwitchHandshakeHandler> switchHandlers;
 	private ConcurrentHashMap<DatapathId, IOFSwitchBackend> switches;
 	private ConcurrentHashMap<DatapathId, IOFSwitch> syncedSwitches;
-
+	
+	//HA data structure
+	private IMap<String, String> masterMap;
 
 	private ISwitchDriverRegistry driverRegistry;
 
@@ -120,7 +126,8 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 	IFloodlightProviderService floodlightProvider;
 	IDebugEventService debugEventService;
 	IDebugCounterService debugCounterService;
-
+	IHazelcastService hazelcast;
+	
 	/** IHAListener Implementation **/
 	@Override
 	public void transitionToActive() {
@@ -440,7 +447,6 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 			}
 		}
 	}
-
 	@Override
 	public void addSwitchEvent(DatapathId dpid, String reason, boolean flushNow) {
 		if (flushNow)
@@ -621,12 +627,11 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 	public Collection<Class<? extends IFloodlightService>>
 	getModuleDependencies() {
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
-
 		l.add(IFloodlightProviderService.class);
 		l.add(IDebugEventService.class);
 		l.add(IDebugCounterService.class);
 		l.add(ISyncService.class);
-
+		l.add(IHazelcastService.class);
 		return l;
 	}
 
@@ -637,7 +642,8 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 		debugEventService = context.getServiceImpl(IDebugEventService.class);
 		debugCounterService = context.getServiceImpl(IDebugCounterService.class);
 		syncService = context.getServiceImpl(ISyncService.class);
-
+		hazelcast=context.getServiceImpl(IHazelcastService.class);
+		
 		// Module variables
 		switchHandlers = new ConcurrentHashMap<DatapathId, OFSwitchHandshakeHandler>();
 		switches = new ConcurrentHashMap<DatapathId, IOFSwitchBackend>();
@@ -645,7 +651,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 		floodlightProvider.getTimer();
 		counters = new SwitchManagerCounters(debugCounterService);
 		driverRegistry = new NaiveSwitchDriverRegistry(this);
-
+		masterMap = hazelcast.getMap(MASTER_MAP);
 		this.switchListeners = new CopyOnWriteArraySet<IOFSwitchListener>();
 
 		/* TODO @Ryan

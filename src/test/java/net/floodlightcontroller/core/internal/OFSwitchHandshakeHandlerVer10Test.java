@@ -159,7 +159,7 @@ public class OFSwitchHandshakeHandlerVer10Test extends OFSwitchHandlerTestBase {
         replay(sw);
 
         reset(roleManager);
-        expect(roleManager.getOFControllerRole()).andReturn(OFControllerRole.ROLE_MASTER).anyTimes();
+        expect(roleManager.getOFControllerRole(null)).andReturn(OFControllerRole.ROLE_MASTER).anyTimes();
         replay(roleManager);
 
         WaitAppHandshakeState state = (WaitAppHandshakeState) switchHandler.getStateForTesting();
