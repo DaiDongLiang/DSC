@@ -13,7 +13,8 @@ import javax.annotation.Nonnull;
 
 import org.jboss.netty.util.Timer;
 
-import net.dsc.ha.HARole;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IClusterService;
 import net.floodlightcontroller.core.IOFConnection;
 import net.floodlightcontroller.core.IOFConnectionBackend;
 import net.floodlightcontroller.core.IOFSwitch;
@@ -101,6 +102,9 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 	private OFFactory factory = OFFactories.getFactory(OFVersion.OF_13);
 	private final OFFeaturesReply featuresReply;
 	private final Timer timer;
+	
+	//cluster
+	private IClusterService clusterService;
 	
 	private volatile OFControllerRole initialRole = null;
 
@@ -1282,8 +1286,11 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState() {
 			setSwitchStatus(SwitchStatus.MASTER);
+			
 			//更新masterMap表
-			roleManager.putMasterMap(getDpid().toString());
+			clusterService.putMasterMap(getDpid().toString());
+			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
+			
 			if (OFSwitchManager.clearTablesOnEachTransitionToMaster) {
 				log.info("Clearing flow tables of {} on recent transition to MASTER.", sw.getId().toString());
 				clearAllTables();
@@ -1420,6 +1427,11 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState() {
 			setSwitchStatus(SwitchStatus.SLAVE);
+			
+			//移除master角色
+			clusterService.removeMasterMap(getDpid().toString());
+			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
+			
 			if (initialRole == null) {
 				initialRole = OFControllerRole.ROLE_SLAVE;
 			}
@@ -1523,7 +1535,8 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			@Nonnull OFFeaturesReply featuresReply,
 			@Nonnull IOFSwitchManager switchManager,
 			@Nonnull RoleManager roleManager,
-			@Nonnull Timer timer) {
+			@Nonnull Timer timer,
+			@Nonnull IClusterService clusterService) {
 		Preconditions.checkNotNull(connection, "connection");
 		Preconditions.checkNotNull(featuresReply, "featuresReply");
 		Preconditions.checkNotNull(switchManager, "switchManager");
@@ -1531,7 +1544,10 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		Preconditions.checkNotNull(timer, "timer");
 		Preconditions.checkArgument(connection.getAuxId().equals(OFAuxId.MAIN),
 				"connection must be MAIN connection but is %s", connection);
-
+		Preconditions.checkNotNull(clusterService, "haService not be null");		
+		
+		this.clusterService=clusterService;
+		
 		this.switchManager = switchManager;
 		this.roleManager = roleManager;
 		this.mainConnection = connection;
@@ -1832,6 +1848,10 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 
 				setSwitchStatus(SwitchStatus.DISCONNECTED);
 				switchManager.switchDisconnected(sw);
+				
+				//culster
+				clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),initialRole.toString());
+				clusterService.removeMasterMap(getDpid().toString());
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package net.dsc.ha;
+package net.dsc.cluster;
 
 import java.io.Serializable;
 
@@ -6,9 +6,17 @@ public class SwitchConnectModel implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+
 	private String controllerId;
 	private String dpid;
 	private String role;
+
+	public SwitchConnectModel(String controllerId, String dpid, String role) {
+		super();
+		this.controllerId = controllerId;
+		this.dpid = dpid;
+		this.role = role;
+	}
 
 	public String getControllerId() {
 		return controllerId;

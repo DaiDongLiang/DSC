@@ -1,6 +1,6 @@
 package net.floodlightcontroller.core.internal;
 
-import static net.dsc.ha.HazelcastTableNameConstant.*;
+import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -16,9 +16,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 
-import net.dsc.ha.HAListenerTypeMarker;
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
+import net.dsc.cluster.ControllerModel;
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.SwitchConnectModel;
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
@@ -72,6 +75,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MultiMap;
 
 /**
  * The Switch Manager class contains most of the code involved with dealing
@@ -110,6 +114,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 	
 	//HA data structure
 	private IMap<String, String> masterMap;
+	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 
 	private ISwitchDriverRegistry driverRegistry;
 
@@ -127,7 +132,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 	IDebugEventService debugEventService;
 	IDebugCounterService debugCounterService;
 	IHazelcastService hazelcast;
-	
+	IClusterService clusterService;
 	/** IHAListener Implementation **/
 	@Override
 	public void transitionToActive() {
@@ -418,11 +423,10 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 		log.debug("{} opened", connection);
 
 		if(auxId.equals(OFAuxId.MAIN)) {
-
 			// Create a new switch handshake handler
 			OFSwitchHandshakeHandler handler =
 					new OFSwitchHandshakeHandler(connection, featuresReply, this,
-							floodlightProvider.getRoleManager(), floodlightProvider.getTimer());
+							floodlightProvider.getRoleManager(), floodlightProvider.getTimer(),clusterService);
 
 			OFSwitchHandshakeHandler oldHandler = switchHandlers.put(dpid, handler);
 
@@ -431,7 +435,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 				log.debug("{} is a new main connection, killing old handler connections", connection);
 				oldHandler.cleanup();
 			}
-
+			
 			handler.beginHandshake();
 
 		} else {
@@ -632,6 +636,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 		l.add(IDebugCounterService.class);
 		l.add(ISyncService.class);
 		l.add(IHazelcastService.class);
+		l.add(IClusterService.class);
 		return l;
 	}
 
@@ -643,7 +648,7 @@ public class OFSwitchManager implements IOFSwitchManager, INewOFConnectionListen
 		debugCounterService = context.getServiceImpl(IDebugCounterService.class);
 		syncService = context.getServiceImpl(ISyncService.class);
 		hazelcast=context.getServiceImpl(IHazelcastService.class);
-		
+		clusterService=context.getServiceImpl(IClusterService.class);
 		// Module variables
 		switchHandlers = new ConcurrentHashMap<DatapathId, OFSwitchHandshakeHandler>();
 		switches = new ConcurrentHashMap<DatapathId, IOFSwitchBackend>();

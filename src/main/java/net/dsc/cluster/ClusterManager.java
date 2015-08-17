@@ -1,6 +1,9 @@
-package net.dsc.ha;
+package net.dsc.cluster;
 
-import static net.dsc.ha.HazelcastTableNameConstant.*;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_LOAD_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_SWITCH_MULITMAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +26,8 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
 
-public class HAManager implements IFloodlightModule {
-	private static final Logger log = LoggerFactory.getLogger(HAManager.class);
+public class ClusterManager implements IFloodlightModule,IClusterService{
+	private static final Logger log = LoggerFactory.getLogger(ClusterManager.class);
 	protected IFloodlightProviderService floodlightProvider;
 	private IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
@@ -34,19 +37,64 @@ public class HAManager implements IFloodlightModule {
 	private IMap<String, Integer> controllerLoad;
 	private IMap<String, String> masterMap;
 
-	public HAManager() {
+	public ClusterManager() { }
+	
+	@Override
+	public void addController(ControllerModel c) {
+		controllers.add(c);
+	}
+	@Override
+	public void removeController(ControllerModel c) {
+		controllers.remove(c);
+		
+	}
+	@Override
+    public void putMasterMap(String dpid){
+    	masterMap.put(dpid, floodlightProvider.getControllerModel().getControllerId());
+    }
+	@Override
+    public void removeMasterMap(String dpid){
+    	if(masterMap.containsKey(dpid)) masterMap.remove(dpid);
+    }
+	@Override
+	public void removeControllerMappingSwitch(ControllerModel c, String dpid,String role) {
+		SwitchConnectModel s=new SwitchConnectModel(c.getControllerId(), dpid, role);
+		controllerMappingSwitch.remove(c, s);
+	}
+	@Override
+	public void putControllerMappingSwitch(ControllerModel c,String dpid,String role){
+		putControllerMappingSwitch(c, new SwitchConnectModel(c.getControllerId(), dpid, role));
+	}
+	
+	private void putControllerMappingSwitch(ControllerModel c,SwitchConnectModel s){
+		controllerMappingSwitch.put(c, s);
+	}
+	
+	
+	public List<ControllerModel> getControllers() {
+		return controllers;
+	}
+
+	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch() {
+		return controllerMappingSwitch;
+	}
+
+	public IMap<String, String> getMasterMap() {
+		return masterMap;
 	}
 
 	// ===============================IFloodlightModule=======================
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
+		l.add(IClusterService.class);
 		return l;
 	}
 
 	@Override
 	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
 		Map<Class<? extends IFloodlightService>, IFloodlightService> m = new HashMap<Class<? extends IFloodlightService>, IFloodlightService>();
+		m.put(IClusterService.class, this);
 		return m;
 	}
 
@@ -63,7 +111,6 @@ public class HAManager implements IFloodlightModule {
 	public void init(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		log.info("HAManager init");
-		Map<String, String> configParams = context.getConfigParams(this);
 		floodlightProvider = context
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
@@ -75,16 +122,11 @@ public class HAManager implements IFloodlightModule {
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
 
-		controllers.add(floodlightProvider.getControllerModel());
 	}
-
-	private void initControllerLoadMap() {
-
-	}
-
+	
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-
 	}
+
 }

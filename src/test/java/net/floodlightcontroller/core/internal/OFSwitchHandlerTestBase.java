@@ -23,17 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.easymock.EasyMock;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.Timer;
-import org.jboss.netty.util.TimerTask;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import net.dsc.ha.HARole;
+import net.dsc.cluster.HARole;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitch.SwitchStatus;
 import net.floodlightcontroller.core.IOFSwitchBackend;
@@ -44,7 +34,18 @@ import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.Quarantin
 import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitAppHandshakeState;
 import net.floodlightcontroller.debugcounter.DebugCounterServiceImpl;
 import net.floodlightcontroller.debugcounter.IDebugCounterService;
+import net.floodlightcontroller.util.LinkedHashSetWrapper;
+import net.floodlightcontroller.util.OrderedCollection;
 
+import org.easymock.EasyMock;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.jboss.netty.util.Timeout;
+import org.jboss.netty.util.Timer;
+import org.jboss.netty.util.TimerTask;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.projectfloodlight.openflow.protocol.OFBadActionCode;
 import org.projectfloodlight.openflow.protocol.OFBadRequestCode;
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
@@ -67,9 +68,6 @@ import org.projectfloodlight.openflow.protocol.match.Match;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.OFAuxId;
 import org.projectfloodlight.openflow.types.OFPort;
-
-import net.floodlightcontroller.util.LinkedHashSetWrapper;
-import net.floodlightcontroller.util.OrderedCollection;
 
 import com.google.common.collect.ImmutableList;
 
@@ -141,7 +139,7 @@ public abstract class OFSwitchHandlerTestBase {
         expect(switchManager.getCounters()).andReturn(counters).anyTimes();
         replay(switchManager);
         connection = new MockOFConnection(featuresReply.getDatapathId(), OFAuxId.MAIN);
-        switchHandler = new OFSwitchHandshakeHandler(connection, featuresReply, switchManager, roleManager, timer);
+        switchHandler = new OFSwitchHandshakeHandler(connection, featuresReply, switchManager, roleManager, timer,null);
         
         // replay sw. Reset it if you need more specific behavior
         replay(sw);

@@ -17,30 +17,42 @@
 
 package net.floodlightcontroller.core.internal;
 
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
-import net.dsc.ha.RoleInfo;
-import net.floodlightcontroller.test.FloodlightTestCase;
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.reset;
+import static org.easymock.EasyMock.same;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.RoleInfo;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IListener;
 import net.floodlightcontroller.core.IListener.Command;
 import net.floodlightcontroller.core.IOFMessageListener;
 import net.floodlightcontroller.core.IOFSwitch;
+import net.floodlightcontroller.core.IOFSwitchBackend;
+import net.floodlightcontroller.core.IShutdownListener;
+import net.floodlightcontroller.core.IShutdownService;
 import net.floodlightcontroller.core.SwitchDescription;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
+import net.floodlightcontroller.core.test.MockSwitchManager;
 import net.floodlightcontroller.core.test.MockThreadPoolService;
-import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugcounter.DebugCounterServiceImpl;
+import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugevent.DebugEventService;
 import net.floodlightcontroller.debugevent.IDebugEventService;
 import net.floodlightcontroller.packet.ARP;
@@ -53,32 +65,28 @@ import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.restserver.RestApiServer;
 import net.floodlightcontroller.storage.IStorageSourceService;
 import net.floodlightcontroller.storage.memory.MemoryStorageSource;
+import net.floodlightcontroller.test.FloodlightTestCase;
 import net.floodlightcontroller.threadpool.IThreadPoolService;
 import net.floodlightcontroller.threadpool.ThreadPool;
 
 import org.junit.After;
-
-import net.floodlightcontroller.core.IShutdownListener;
-import net.floodlightcontroller.core.IShutdownService;
-import net.floodlightcontroller.core.internal.IOFSwitchService;
-import net.floodlightcontroller.core.test.MockSwitchManager;
-import net.floodlightcontroller.core.IOFSwitchBackend;
-
+import org.junit.Before;
+import org.junit.Test;
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.protocol.OFFactories;
+import org.projectfloodlight.openflow.protocol.OFFactory;
 import org.projectfloodlight.openflow.protocol.OFFeaturesReply;
 import org.projectfloodlight.openflow.protocol.OFFlowMod;
 import org.projectfloodlight.openflow.protocol.OFMessage;
 import org.projectfloodlight.openflow.protocol.OFPacketIn;
 import org.projectfloodlight.openflow.protocol.OFPacketInReason;
+import org.projectfloodlight.openflow.protocol.OFPortDesc;
+import org.projectfloodlight.openflow.protocol.OFType;
 import org.projectfloodlight.openflow.protocol.OFVersion;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.EthType;
 import org.projectfloodlight.openflow.types.OFBufferId;
 import org.projectfloodlight.openflow.types.OFPort;
-import org.projectfloodlight.openflow.protocol.OFPortDesc;
-import org.projectfloodlight.openflow.protocol.OFType;
-import org.projectfloodlight.openflow.protocol.OFFactory;
 import org.sdnplatform.sync.ISyncService;
 import org.sdnplatform.sync.test.MockSyncService;
 

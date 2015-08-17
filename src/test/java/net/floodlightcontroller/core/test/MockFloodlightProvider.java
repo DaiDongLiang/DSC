@@ -35,11 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import net.dsc.ha.ControllerModel;
-import net.dsc.ha.HAListenerTypeMarker;
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
-import net.dsc.ha.RoleInfo;
+import net.dsc.cluster.ControllerModel;
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.RoleInfo;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IInfoProvider;

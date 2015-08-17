@@ -18,26 +18,23 @@
 package net.floodlightcontroller.core.internal;
 
 import static org.easymock.EasyMock.anyObject;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import net.dsc.ha.HARole;
-import net.floodlightcontroller.test.FloodlightTestCase;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reset;
 import static org.easymock.EasyMock.verify;
-
-import org.junit.After;
-
+import static org.junit.Assert.assertTrue;
+import net.dsc.cluster.HARole;
 import net.floodlightcontroller.core.IShutdownService;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
 import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugcounter.MockDebugCounterService;
+import net.floodlightcontroller.test.FloodlightTestCase;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RoleManagerTest extends FloodlightTestCase {
     private Controller controller;

@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.dsc.ha.ControllerModel;
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
-import net.dsc.ha.RoleInfo;
+import net.dsc.cluster.ControllerModel;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.RoleInfo;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
 import net.floodlightcontroller.core.internal.Controller.ModuleLoaderState;
 import net.floodlightcontroller.core.internal.RoleManager;

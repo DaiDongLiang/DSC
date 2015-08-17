@@ -1,4 +1,4 @@
-package net.dsc.ha;
+package net.dsc.cluster;
 
 /**
  * This is a dummy marker. IListener enforces call ordering by type. However,

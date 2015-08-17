@@ -30,9 +30,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import net.dsc.ha.HAListenerTypeMarker;
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFMessageListener;

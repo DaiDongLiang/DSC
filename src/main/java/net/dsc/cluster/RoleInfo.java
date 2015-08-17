@@ -14,7 +14,7 @@
  *    under the License.
  **/
 
-package net.dsc.ha;
+package net.dsc.cluster;
 
 import java.util.Date;
 

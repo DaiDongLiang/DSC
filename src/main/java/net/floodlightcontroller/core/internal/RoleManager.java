@@ -6,9 +6,10 @@ import javax.annotation.Nonnull;
 
 import java.util.Date;
 
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
-import net.dsc.ha.RoleInfo;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.RoleInfo;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitchBackend;
 import net.floodlightcontroller.core.IShutdownService;
@@ -68,8 +69,7 @@ public class RoleManager {
     /**
      * 集群角色集合
      */
-    private IMap<String, String> masterMap;
-    
+    private final IClusterService clusterService;
     private static final Logger log =
             LoggerFactory.getLogger(RoleManager.class);
     /**
@@ -81,12 +81,12 @@ public class RoleManager {
             @Nonnull IShutdownService shutdownService,
             @Nonnull HARole role,
             @Nonnull String roleChangeDescription,
-            @Nonnull IMap<String, String> map) {
+            @Nonnull IClusterService clusterService) {
         Preconditions.checkNotNull(controller, "controller must not be null");
         Preconditions.checkNotNull(role, "role must not be null");
         Preconditions.checkNotNull(roleChangeDescription, "roleChangeDescription must not be null");
         Preconditions.checkNotNull(shutdownService, "shutdownService must not be null");
-        Preconditions.checkNotNull(map, "mastermap must not be null");
+        Preconditions.checkNotNull(clusterService, "clusterService must not be null");
         
         this.currentRoleInfo = new RoleInfo(role,
                                        roleChangeDescription,
@@ -94,7 +94,7 @@ public class RoleManager {
         this.controller = controller;
         this.shutdownService = shutdownService;
         this.counters = new RoleManagerCounters(controller.getDebugCounter());
-        this.masterMap=map;
+        this.clusterService=clusterService;
     }
 
     /**
@@ -157,8 +157,8 @@ public class RoleManager {
         currentRoleInfo =
                 new RoleInfo(role, roleChangeDescription, new Date());
 
-        controller.addUpdateToQueue(new HARoleUpdate(role));
-        controller.addUpdateToQueue(new SwitchRoleUpdate(role));
+        getController().addUpdateToQueue(new HARoleUpdate(role));
+        getController().addUpdateToQueue(new SwitchRoleUpdate(role));
 
     }
 
@@ -170,15 +170,13 @@ public class RoleManager {
     }
 
     public synchronized OFControllerRole getOFControllerRole(DatapathId dpid) {
-    	if(masterMap.containsKey(dpid)) 
+    	if(clusterService.getMasterMap().containsKey(dpid.toString())){
     		return OFControllerRole.ROLE_SLAVE;
-    	else
+    	}
+    	else{
     		return OFControllerRole.ROLE_MASTER;
+    	}
     			
-    }
-    
-    public synchronized void putMasterMap(String dpid){
-    	masterMap.put(dpid, controller.getControllerModel().getControllerId());
     }
     /**
      * Return the RoleInfo object describing the current role.
@@ -206,7 +204,7 @@ public class RoleManager {
      * @return
      */
     private boolean switchesHaveAnotherMaster() {
-        IOFSwitchService switchService = controller.getSwitchService();
+        IOFSwitchService switchService = getController().getSwitchService();
 
         for(Entry<DatapathId, IOFSwitch> switchMap : switchService.getAllSwitchMap().entrySet()){
             IOFSwitchBackend sw = (IOFSwitchBackend) switchMap.getValue();
@@ -245,7 +243,7 @@ public class RoleManager {
                 log.debug("Dispatching HA Role update newRole = {}",
                           newRole);
             }
-            for (IHAListener listener : controller.haListeners.getOrderedListeners()) {
+            for (IHAListener listener : getController().haListeners.getOrderedListeners()) {
                 if (log.isTraceEnabled()) {
                     log.trace("Calling HAListener {} with transitionTo{}",
                               listener.getName(), newRole);
@@ -260,7 +258,7 @@ public class RoleManager {
                 }
            }
 
-           controller.setNotifiedRole(newRole);
+           getController().setNotifiedRole(newRole);
 
            if(newRole == HARole.STANDBY) {
                String reason = String.format("Received role request to "
@@ -285,8 +283,8 @@ public class RoleManager {
                           this.role, this.role.getOFRole());
             }
 
-            for (OFSwitchHandshakeHandler h: controller.getSwitchService().getSwitchHandshakeHandlers()){
-            	if(masterMap.containsKey(h.getDpid()))
+            for (OFSwitchHandshakeHandler h: getController().getSwitchService().getSwitchHandshakeHandlers()){
+            	if(clusterService.getMasterMap().containsKey(h.getDpid()))
             		h.sendRoleRequest(OFControllerRole.ROLE_SLAVE);
             	else
             		h.sendRoleRequest(OFControllerRole.ROLE_MASTER);
@@ -298,8 +296,8 @@ public class RoleManager {
         return this.counters;
     }
 
-	public IMap<String, String> getMasterMap() {
-		return masterMap;
-	}    
+	public Controller getController() {
+		return controller;
+	}
 	
 }
