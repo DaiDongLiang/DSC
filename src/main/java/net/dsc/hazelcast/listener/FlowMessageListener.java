@@ -11,7 +11,7 @@ public class FlowMessageListener implements MessageListener<FlowMessage>{
 	public void onMessage(Message<FlowMessage> message) {
 		// TODO Auto-generated method stub
 		FlowMessage flowMessage = message.getMessageObject();
-		
+
 	}
 
 }

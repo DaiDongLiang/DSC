@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.dsc.hazelcast.listener.ControllerMembershipListener;
+
 import net.dsc.hazelcast.message.FlowMessage;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
@@ -93,12 +93,15 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
 		HazelcastListenerManager.addMemberListener();
+
 	}
 	@Override
-	public void publshFlowMessage(FlowMessage flowMessage) {
+	public void publishFlowMessage(FlowMessage flowMessage) {
 		ITopic<FlowMessage> topic =  client.getTopic(FlowMessageTopic);
 		topic.publish(flowMessage);
-		
 	}
+		
+
+	
 
 }
