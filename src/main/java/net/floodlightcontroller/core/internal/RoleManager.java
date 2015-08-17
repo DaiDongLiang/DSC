@@ -16,6 +16,7 @@ import net.floodlightcontroller.core.internal.Controller.IUpdate;
 
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
+import org.python.modules.synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,7 +176,10 @@ public class RoleManager {
     		return OFControllerRole.ROLE_MASTER;
     			
     }
-
+    
+    public synchronized void putMasterMap(String dpid){
+    	masterMap.put(dpid, controller.getControllerModel().getControllerId());
+    }
     /**
      * Return the RoleInfo object describing the current role.
      *
@@ -293,4 +297,9 @@ public class RoleManager {
     public RoleManagerCounters getCounters() {
         return this.counters;
     }
+
+	public IMap<String, String> getMasterMap() {
+		return masterMap;
+	}    
+	
 }
