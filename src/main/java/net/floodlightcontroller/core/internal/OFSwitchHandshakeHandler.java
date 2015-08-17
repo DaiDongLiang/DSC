@@ -1261,6 +1261,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState(){
 			sendRoleRequest(roleManager.getOFControllerRole(getDpid()));
+			
 		}
 	}
 
@@ -1281,6 +1282,8 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState() {
 			setSwitchStatus(SwitchStatus.MASTER);
+			//更新masterMap表
+			roleManager.putMasterMap(getDpid().toString());
 			if (OFSwitchManager.clearTablesOnEachTransitionToMaster) {
 				log.info("Clearing flow tables of {} on recent transition to MASTER.", sw.getId().toString());
 				clearAllTables();
