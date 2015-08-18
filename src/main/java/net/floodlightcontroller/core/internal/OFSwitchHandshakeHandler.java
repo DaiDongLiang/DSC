@@ -1287,7 +1287,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState() {
 			setSwitchStatus(SwitchStatus.MASTER);
-			
+			initialRole = OFControllerRole.ROLE_MASTER;
 			//cluster
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
@@ -1295,7 +1295,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 				log.info("Clearing flow tables of {} on recent transition to MASTER.", sw.getId().toString());
 				clearAllTables();
 			} else if (OFSwitchManager.clearTablesOnInitialConnectAsMaster && initialRole == null) { /* don't do it if we were slave first */
-				initialRole = OFControllerRole.ROLE_MASTER;
+				
 				log.info("Clearing flow tables of {} on initial role as MASTER.", sw.getId().toString());
 				clearAllTables();
 			}
@@ -1850,7 +1850,11 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 				switchManager.switchDisconnected(sw);
 				
 				//culster
-				clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),initialRole.toString());
+				log.info(roleManager.getController().getControllerModel().toString()+"test1");
+				log.info(getDpid().toString()+"test2");
+				log.info(initialRole.toString()+"test3");
+				
+				clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(),getDpid().toString(),initialRole.toString());
 				clusterService.removeMasterMap(getDpid().toString());
 				clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
 			}

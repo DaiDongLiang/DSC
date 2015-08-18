@@ -1,6 +1,7 @@
 package net.dsc.hazelcast.listener;
 
 
+import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
@@ -10,6 +11,7 @@ public class ControllerMembershipListener implements MembershipListener {
 	@Override
 	public void memberAdded(MembershipEvent arg0) {
 		// TODO Auto-generated method stub
+		Member member = arg0.getMember();
 		
 		System.out.println("member add");
 	}
@@ -23,7 +25,7 @@ public class ControllerMembershipListener implements MembershipListener {
 	@Override
 	public void memberRemoved(MembershipEvent arg0) {
 		// TODO Auto-generated method stub
-		
+			
 	}
 
 }
