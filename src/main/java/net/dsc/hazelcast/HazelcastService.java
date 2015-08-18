@@ -101,13 +101,12 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 		ITopic<FlowMessage> topic =  client.getTopic(FlowMessageTopic);
 		topic.publish(flowMessage);
 	}
+	
+	
 	@Override
 	public Member getLocalMember() {
 		return hazelcastInstance.getCluster().getLocalMember();
 		
 	}
-		
-
 	
-
 }

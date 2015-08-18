@@ -172,25 +172,17 @@ public class ClusterManager implements IFloodlightModule, IClusterService ,Membe
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		
 	}
 	
 	//MembershipListener implements
 	@Override
-	public void memberAdded(MembershipEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void memberAdded(MembershipEvent arg0) { }
 
 	@Override
-	public void memberAttributeChanged(MemberAttributeEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void memberAttributeChanged(MemberAttributeEvent arg0) { }
 
 	@Override
-	public void memberRemoved(MembershipEvent arg0) {
-		// TODO Auto-generated method stub
+	public void memberRemoved(MembershipEvent event) {
 		
 	}
 
