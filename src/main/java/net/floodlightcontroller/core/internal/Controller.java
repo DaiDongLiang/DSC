@@ -17,8 +17,6 @@
 
 package net.floodlightcontroller.core.internal;
 
-import static net.dsc.ha.HazelcastTableNameConstant.MASTER_MAP;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -38,11 +36,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.dsc.ha.ControllerModel;
-import net.dsc.ha.HAListenerTypeMarker;
-import net.dsc.ha.HARole;
-import net.dsc.ha.IHAListener;
-import net.dsc.ha.RoleInfo;
+import net.dsc.cluster.ControllerModel;
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.RoleInfo;
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.ControllerId;
 import net.floodlightcontroller.core.FloodlightContext;
@@ -91,7 +90,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.hazelcast.core.IMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -118,7 +116,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
      */
     protected HashMap<String, String> controllerNodeIPsCache;
     
-	private IMap<String, String> masterMap;
     /**
      * 集群监听器调度
      */
@@ -144,7 +141,10 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
 
     // Module dependencies
+    
+    //cluster 
     private IHazelcastService hazelcast;
+    private IClusterService clusterService;
     /**
      * 内部数据库
      */
@@ -840,7 +840,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         this.controllerNodeIPsCache = new HashMap<String, String>();
         this.updates = new LinkedBlockingQueue<IUpdate>();
         this.providerMap = new HashMap<String, List<IInfoProvider>>();
-		masterMap = hazelcast.getMap(MASTER_MAP);
         
         setConfigParams(configParams);
 
@@ -850,7 +849,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
         this.roleManager = new RoleManager(this, this.shutdownService,
                                            this.notifiedRole,
-                                           INITIAL_ROLE_CHANGE_DESCRIPTION,masterMap);
+                                           INITIAL_ROLE_CHANGE_DESCRIPTION,clusterService);
         this.timer = new HashedWheelTimer();
 
         // Switch Service Startup
@@ -859,8 +858,12 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
         this.counters = new ControllerCounters(debugCounterService);
         
+        //cluster
         this.controller=new ControllerModel(UUID.randomUUID().toString(),configParams.get("LocalIp"));
-     }
+        clusterService.addController(controller);
+        clusterService.ControllerLoadReset(controller.getControllerId());
+        
+    }
 
     /**
      * Startup all of the controller's components
@@ -1199,6 +1202,14 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
 	public void setHazelcast(IHazelcastService hazelcast) {
 		this.hazelcast = hazelcast;
+	}
+
+	public IClusterService getClusterService() {
+		return clusterService;
+	}
+
+	public void setClusterService(IClusterService clusterService) {
+		this.clusterService = clusterService;
 	}
 }
 

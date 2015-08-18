@@ -1,4 +1,4 @@
-package net.dsc.ha;
+package net.dsc.cluster;
 
 public class HazelcastTableNameConstant {
 	public static final String CONTROLLER_MAP_NAME="controllers";

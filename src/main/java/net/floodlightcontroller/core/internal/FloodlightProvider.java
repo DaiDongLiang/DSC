@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.dsc.cluster.IClusterService;
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.internal.Controller;
@@ -77,6 +78,7 @@ public class FloodlightProvider implements IFloodlightModule {
 		dependencies.add(IThreadPoolService.class);
 		dependencies.add(ISyncService.class);
 		dependencies.add(IHazelcastService.class);
+		dependencies.add(IClusterService.class);
 		return dependencies;
 	}
 
@@ -100,6 +102,8 @@ public class FloodlightProvider implements IFloodlightModule {
 				.getServiceImpl(IOFSwitchService.class));
 		controller
 				.setHazelcast(context.getServiceImpl(IHazelcastService.class));
+		controller.setClusterService(context.getServiceImpl(IClusterService.class));
+		
 		controller.init(context.getConfigParams(this));
 	}
 

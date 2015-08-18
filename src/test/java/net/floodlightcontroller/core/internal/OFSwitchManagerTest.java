@@ -17,6 +17,7 @@
 
 package net.floodlightcontroller.core.internal;
 
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.createStrictMock;
@@ -25,7 +26,6 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.reset;
 import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.anyObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -35,12 +35,7 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.jboss.netty.util.Timer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import net.dsc.ha.HARole;
+import net.dsc.cluster.HARole;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitch.SwitchStatus;
@@ -66,6 +61,10 @@ import net.floodlightcontroller.storage.memory.MemoryStorageSource;
 import net.floodlightcontroller.threadpool.IThreadPoolService;
 import net.floodlightcontroller.threadpool.ThreadPool;
 
+import org.jboss.netty.util.Timer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.projectfloodlight.openflow.protocol.OFFactories;
 import org.projectfloodlight.openflow.protocol.OFFactory;
 import org.projectfloodlight.openflow.protocol.OFFeaturesReply;

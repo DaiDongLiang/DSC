@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.dsc.ha.HARole;
-import net.dsc.ha.RoleInfo;
+import net.dsc.cluster.HARole;
+import net.dsc.cluster.RoleInfo;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.annotations.LogMessageDoc;
 

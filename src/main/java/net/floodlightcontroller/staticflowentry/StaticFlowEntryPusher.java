@@ -28,8 +28,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.dsc.ha.HAListenerTypeMarker;
-import net.dsc.ha.IHAListener;
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFMessageListener;
