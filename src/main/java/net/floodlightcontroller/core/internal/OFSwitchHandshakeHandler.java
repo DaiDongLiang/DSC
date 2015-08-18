@@ -1856,7 +1856,6 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 
 				setSwitchStatus(SwitchStatus.DISCONNECTED);
 				switchManager.switchDisconnected(sw);
-				
 			}
 		}
 	}

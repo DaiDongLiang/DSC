@@ -8,6 +8,7 @@ import com.hazelcast.core.MultiMap;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
 public interface  IClusterService extends IFloodlightService{
+	
 	//控制器<->交换机映射
 	public void putControllerMappingSwitch(ControllerModel c,String dpid,String role);
 	public void removeControllerMappingSwitch(ControllerModel c,String dpid,String role);
@@ -17,6 +18,7 @@ public interface  IClusterService extends IFloodlightService{
 	public void removeController(ControllerModel c);
 	public List<ControllerModel> getControllers();
 	//master switch dpid<->controllerId映射 
+	
 	public void putMasterMap(String dpid);
     public void removeMasterMap(String dpid);
 	public IMap<String, String> getMasterMap();

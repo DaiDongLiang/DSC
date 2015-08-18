@@ -141,7 +141,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
 
     // Module dependencies
-    
     //cluster 
     private IHazelcastService hazelcast;
     private IClusterService clusterService;
