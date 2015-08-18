@@ -7,31 +7,41 @@ import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.IFloodlightProviderService;
+import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
 
+import org.projectfloodlight.openflow.protocol.OFControllerRole;
+import org.projectfloodlight.openflow.types.DatapathId;
+import org.projectfloodlight.openflow.types.U64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
-public class ClusterManager implements IFloodlightModule, IClusterService ,MembershipListener{
+public class ClusterManager implements IFloodlightModule, IClusterService,
+		MembershipListener {
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
+
 	protected IFloodlightProviderService floodlightProvider;
+	protected IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
 
 	private List<ControllerModel> controllers;
@@ -40,6 +50,24 @@ public class ClusterManager implements IFloodlightModule, IClusterService ,Membe
 	private IMap<String, String> masterMap;
 
 	public ClusterManager() {
+	}
+
+	@Override
+	public String getMinControllerLoad() {
+		String result = null;
+		Integer min = 0;
+		for (String uuid : controllerLoad.keySet()) {
+			if (min == 0) {
+				min = controllerLoad.get(uuid);
+				result = uuid;
+			} else {
+				if (min > controllerLoad.get(uuid)) {
+					min = controllerLoad.get(uuid);
+					result = uuid;
+				}
+			}
+		}
+		return result;
 	}
 
 	@Override
@@ -99,7 +127,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService ,Membe
 	@Override
 	public void removeControllerMappingSwitch(ControllerModel c, String dpid,
 			String role) {
-		
+
 		SwitchConnectModel s = new SwitchConnectModel(c.getControllerId(),
 				dpid, role);
 		controllerMappingSwitch.remove(c, s);
@@ -160,7 +188,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService ,Membe
 		floodlightProvider = context
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
-
+		switchService = context.getServiceImpl(IOFSwitchService.class);
 		controllers = hazelcast.getList(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast
 				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
@@ -172,18 +200,40 @@ public class ClusterManager implements IFloodlightModule, IClusterService ,Membe
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
+		hazelcast.addMemberListener(this);
 	}
-	
-	//MembershipListener implements
+
+	// MembershipListener implements
 	@Override
-	public void memberAdded(MembershipEvent arg0) { }
+	public void memberAdded(MembershipEvent arg0) {
+	}
 
 	@Override
-	public void memberAttributeChanged(MemberAttributeEvent arg0) { }
+	public void memberAttributeChanged(MemberAttributeEvent arg0) {
+	}
 
 	@Override
 	public void memberRemoved(MembershipEvent event) {
-		
+		Member m = event.getMember();
+		ControllerModel c = new ControllerModel(m.getUuid(), m
+				.getSocketAddress().getAddress().toString());
+		String uuid = getMinControllerLoad();
+		if (uuid.equals(floodlightProvider.getControllerModel().getControllerId())) {
+			Collection<SwitchConnectModel> switchs = new ArrayList<SwitchConnectModel>(
+					controllerMappingSwitch.get(c));
+			controllerMappingSwitch.remove(c);
+			for (SwitchConnectModel s : switchs) {
+				if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) {
+					DatapathId dpid = DatapathId.of(s.getDpid());
+					removeMasterMap(dpid.toString());
+					IOFSwitch sw = switchService.getSwitch(dpid);
+					log.info("change master {}<-->{}",uuid,dpid);
+					sw.writeRequest(sw.getOFFactory().buildRoleRequest()
+							.setGenerationId(U64.ZERO)
+							.setRole(OFControllerRole.ROLE_MASTER).build());
+				}
+			}
+		}
 	}
 
 }

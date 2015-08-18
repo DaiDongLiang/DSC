@@ -26,4 +26,6 @@ public interface  IClusterService extends IFloodlightService{
 	public void ControllerLoadIncrease(String controllerId,int num);
 	public void ControllerLoadReduce(String controllerId,int num);
 	public void ControllerLoadReset(String controllerId);
+	
+	public  String getMinControllerLoad();
 }
