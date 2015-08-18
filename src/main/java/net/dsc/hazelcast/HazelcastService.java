@@ -21,6 +21,7 @@ import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Member;
+import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
 public class HazelcastService implements IHazelcastService,IFloodlightModule{
@@ -92,7 +93,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
-		HazelcastListenerManager.addMemberListener();
+		
 		
 	}
 	
@@ -108,5 +109,9 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 		return hazelcastInstance.getCluster().getLocalMember();
 		
 	}
-	
+	@Override
+	public void addMemberListener(MembershipListener mebershipListener) {
+		HazelcastListenerManager.addMemberListener(mebershipListener);
+		
+	}	
 }
