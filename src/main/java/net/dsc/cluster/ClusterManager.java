@@ -23,9 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MemberAttributeEvent;
+import com.hazelcast.core.MembershipEvent;
+import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
-public class ClusterManager implements IFloodlightModule, IClusterService {
+public class ClusterManager implements IFloodlightModule, IClusterService ,MembershipListener{
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
 	protected IFloodlightProviderService floodlightProvider;
@@ -96,6 +99,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService {
 	@Override
 	public void removeControllerMappingSwitch(ControllerModel c, String dpid,
 			String role) {
+		
 		SwitchConnectModel s = new SwitchConnectModel(c.getControllerId(),
 				dpid, role);
 		controllerMappingSwitch.remove(c, s);
@@ -168,6 +172,25 @@ public class ClusterManager implements IFloodlightModule, IClusterService {
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
+		
+	}
+	
+	//MembershipListener implements
+	@Override
+	public void memberAdded(MembershipEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void memberAttributeChanged(MemberAttributeEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void memberRemoved(MembershipEvent arg0) {
+		// TODO Auto-generated method stub
 		
 	}
 
