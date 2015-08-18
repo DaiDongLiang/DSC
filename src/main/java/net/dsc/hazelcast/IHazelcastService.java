@@ -8,6 +8,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
 import com.hazelcast.core.Member;
+import com.hazelcast.core.MembershipListener;
 import com.hazelcast.core.MultiMap;
 
 public interface IHazelcastService extends IFloodlightService{
@@ -24,4 +25,6 @@ public interface IHazelcastService extends IFloodlightService{
 	public void publishFlowMessage(FlowMessage flowMessage);
 	
 	public Member getLocalMember();
+	
+	public void addMemberListener(MembershipListener mebershipListener);
 }
