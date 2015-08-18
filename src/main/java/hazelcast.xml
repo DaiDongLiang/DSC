@@ -245,6 +245,6 @@
     <services enable-defaults="true"/>
 	
 	<listeners>
-		<listener>net.floodlightcontroller.hazelcast.listener.ControllerMembershipListener</listener>
+		<listener>net.dsc.hazelcast.listener.ControllerMembershipListener</listener>
 	</listeners>
 </hazelcast>

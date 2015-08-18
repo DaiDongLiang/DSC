@@ -170,7 +170,7 @@ public class RoleManager {
     }
 
     public synchronized OFControllerRole getOFControllerRole(DatapathId dpid) {
-    	if(masterMap.containsKey(dpid)) 
+    	if(masterMap.containsKey(dpid.toString())) 
     		return OFControllerRole.ROLE_SLAVE;
     	else
     		return OFControllerRole.ROLE_MASTER;
