@@ -141,7 +141,8 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
 
     // Module dependencies
-    //cluster service
+    
+    //cluster 
     private IHazelcastService hazelcast;
     private IClusterService clusterService;
     /**
@@ -857,9 +858,12 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
         this.counters = new ControllerCounters(debugCounterService);
         
+        //cluster
         this.controller=new ControllerModel(UUID.randomUUID().toString(),configParams.get("LocalIp"));
         clusterService.addController(controller);
-     }
+        clusterService.ControllerLoadReset(controller.getControllerId());
+        
+    }
 
     /**
      * Startup all of the controller's components

@@ -25,11 +25,10 @@ import org.slf4j.LoggerFactory;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
-
-public class ClusterManager implements IFloodlightModule,IClusterService{
-	private static final Logger log = LoggerFactory.getLogger(ClusterManager.class);
+public class ClusterManager implements IFloodlightModule, IClusterService {
+	private static final Logger log = LoggerFactory
+			.getLogger(ClusterManager.class);
 	protected IFloodlightProviderService floodlightProvider;
-	private IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
 
 	private List<ControllerModel> controllers;
@@ -37,40 +36,83 @@ public class ClusterManager implements IFloodlightModule,IClusterService{
 	private IMap<String, Integer> controllerLoad;
 	private IMap<String, String> masterMap;
 
-	public ClusterManager() { }
-	
+	public ClusterManager() {
+	}
+
+	@Override
+	public void ControllerLoadIncrease(String controllerId, int num) {
+		if (num < 0)
+			throw new IllegalArgumentException("num < 0");
+		Integer i = controllerLoad.get(controllerId);
+		if (null == i)
+			controllerLoad.put(controllerId, num);
+		else
+			controllerLoad.set(controllerId, i + num);
+	}
+
+	@Override
+	public void ControllerLoadReduce(String controllerId, int num) {
+		if (num < 0)
+			throw new IllegalArgumentException("num < 0");
+		Integer i = controllerLoad.get(controllerId);
+		if (null == i)
+			ControllerLoadReset(controllerId);
+		else
+			controllerLoad.set(controllerId, i - num < 0 ? 0 : i - num);
+	}
+
+	@Override
+	public void ControllerLoadReset(String controllerId) {
+		if (controllerLoad.containsKey(controllerId))
+			controllerLoad.clear();
+		else
+			controllerLoad.put(controllerId, 0);
+	}
+
+	// 添加控制器集合
 	@Override
 	public void addController(ControllerModel c) {
 		controllers.add(c);
 	}
+
 	@Override
 	public void removeController(ControllerModel c) {
 		controllers.remove(c);
-		
+
 	}
+
 	@Override
-    public void putMasterMap(String dpid){
-    	masterMap.put(dpid, floodlightProvider.getControllerModel().getControllerId());
-    }
+	public void putMasterMap(String dpid) {
+		masterMap.put(dpid, floodlightProvider.getControllerModel()
+				.getControllerId());
+	}
+
 	@Override
-    public void removeMasterMap(String dpid){
-    	if(masterMap.containsKey(dpid)) masterMap.remove(dpid);
-    }
+	public void removeMasterMap(String dpid) {
+		if (masterMap.containsKey(dpid))
+			masterMap.remove(dpid);
+	}
+
 	@Override
-	public void removeControllerMappingSwitch(ControllerModel c, String dpid,String role) {
-		SwitchConnectModel s=new SwitchConnectModel(c.getControllerId(), dpid, role);
+	public void removeControllerMappingSwitch(ControllerModel c, String dpid,
+			String role) {
+		SwitchConnectModel s = new SwitchConnectModel(c.getControllerId(),
+				dpid, role);
 		controllerMappingSwitch.remove(c, s);
 	}
+
 	@Override
-	public void putControllerMappingSwitch(ControllerModel c,String dpid,String role){
-		putControllerMappingSwitch(c, new SwitchConnectModel(c.getControllerId(), dpid, role));
+	public void putControllerMappingSwitch(ControllerModel c, String dpid,
+			String role) {
+		putControllerMappingSwitch(c,
+				new SwitchConnectModel(c.getControllerId(), dpid, role));
 	}
-	
-	private void putControllerMappingSwitch(ControllerModel c,SwitchConnectModel s){
+
+	private void putControllerMappingSwitch(ControllerModel c,
+			SwitchConnectModel s) {
 		controllerMappingSwitch.put(c, s);
 	}
-	
-	
+
 	public List<ControllerModel> getControllers() {
 		return controllers;
 	}
@@ -114,7 +156,6 @@ public class ClusterManager implements IFloodlightModule,IClusterService{
 		floodlightProvider = context
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
-		switchService = context.getServiceImpl(IOFSwitchService.class);
 
 		controllers = hazelcast.getList(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast
@@ -123,10 +164,11 @@ public class ClusterManager implements IFloodlightModule,IClusterService{
 		masterMap = hazelcast.getMap(MASTER_MAP);
 
 	}
-	
+
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
+		
 	}
 
 }
