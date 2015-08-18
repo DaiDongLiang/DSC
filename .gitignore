@@ -1,3 +1,5 @@
 /Floodlight-Default-Conf.launch
 /Floodlight-Quantum-Conf.launch
 /SyncClient.launch
+/src/test
+/target

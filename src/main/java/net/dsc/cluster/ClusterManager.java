@@ -129,4 +129,23 @@ public class ClusterManager implements IFloodlightModule,IClusterService{
 			throws FloodlightModuleException {
 	}
 
+	@Override
+	public void ControllerLoadIncrease(String controllerId, int num) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ControllerLoadReduce(String controllerId, int num) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ControllerLoadReset(String controllerId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
 }

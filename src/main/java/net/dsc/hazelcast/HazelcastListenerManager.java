@@ -6,7 +6,7 @@ import net.dsc.hazelcast.message.FlowMessage;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
-
+//监听器管理
 public class HazelcastListenerManager {
 	private static HazelcastInstance instance = HazelcastManager.getHazelcastInstance();
 	private static HazelcastInstance client = HazelcastManager.getHazelcastClient();
