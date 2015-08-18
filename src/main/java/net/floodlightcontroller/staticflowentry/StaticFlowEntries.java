@@ -56,6 +56,7 @@ import org.projectfloodlight.openflow.types.U64;
 /**
  * Represents static flow entries to be maintained by the controller on the 
  * switches. 
+ * 表示交换机上由控制器维护的静态流表项
  */
 @LogMessageCategory("Static Flow Pusher")
 public class StaticFlowEntries {
@@ -64,6 +65,7 @@ public class StaticFlowEntries {
 
 	/**
 	 * This function generates a random hash for the bottom half of the cookie
+	 * 此函数产生随机hash提供给cookie
 	 * 
 	 * @param fm
 	 * @param userCookie

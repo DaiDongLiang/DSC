@@ -71,7 +71,7 @@ public class AppCookie {
 
     /**
      * Encapsulate an application ID and a user block of stuff into a cookie
-     *
+     *将应用ID和用户封装成cookie
      * @param application An ID to identify the application
      * @param user Some application specific data
      * @return a cookie for use in OFFlowMod.setCookie()
