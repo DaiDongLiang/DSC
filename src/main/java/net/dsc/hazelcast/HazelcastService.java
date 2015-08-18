@@ -96,11 +96,14 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 		
 		
 	}
+	
 	@Override
 	public void publishFlowMessage(FlowMessage flowMessage) {
 		ITopic<FlowMessage> topic =  client.getTopic(FlowMessageTopic);
 		topic.publish(flowMessage);
 	}
+	
+	
 	@Override
 	public Member getLocalMember() {
 		return hazelcastInstance.getCluster().getLocalMember();
@@ -108,13 +111,8 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	}
 	@Override
 	public void addMemberListener(MembershipListener mebershipListener) {
-		HazelcastListenerManager.addMemberListener(mebershipListener);
-	
-	}
-	
-	
-		
 
-	
+		HazelcastListenerManager.addMemberListener(mebershipListener);	
+	}	
 
 }

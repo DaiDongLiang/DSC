@@ -44,10 +44,17 @@
                 <multicast-port>54327</multicast-port>
             </multicast>
             <tcp-ip enabled="true">
+<<<<<<< HEAD
+                <interface>192.168.99.136</interface>
+                <member-list>
+                    <member>192.168.99.136</member>
+                    <member>192.168.99.211</member>
+=======
                 <interface>192.168.99.211</interface>
                 <member-list>
                     <member>192.168.99.211</member>
                     <member>192.168.99.136</member>
+>>>>>>> mr253727942-master
                 </member-list>
             </tcp-ip>
             <aws enabled="false">
