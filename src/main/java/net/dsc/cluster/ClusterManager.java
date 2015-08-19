@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,29 +27,20 @@ import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.U64;
 import org.python.modules.synchronize;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 
 
+
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
-
 import com.hazelcast.core.MembershipEvent;
-
 import com.hazelcast.core.MultiMap;
 
 
-public class ClusterManager implements IFloodlightModule, IClusterService,
- 
-	
-	
-
-
-		IControllerListener{
+public class ClusterManager implements IFloodlightModule, IClusterService,IControllerListener{
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
@@ -152,7 +144,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	}
 
 	@Override
-	public void putControllerMappingSwitch(ControllerModel c, String dpid,
+	public synchronized  void putControllerMappingSwitch(ControllerModel c, String dpid,
 			String role) {
 		putControllerMappingSwitch(c,
 				new SwitchConnectModel(c.getControllerId(), dpid, role));
@@ -160,6 +152,14 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	private void putControllerMappingSwitch(ControllerModel c,
 			SwitchConnectModel s) {
+		for(Iterator<SwitchConnectModel>i=controllerMappingSwitch.get(c).iterator();i.hasNext();){
+			SwitchConnectModel scm=i.next();
+			if(scm.getDpid().equals(s.getDpid())){
+				controllerMappingSwitch.remove(c, scm);
+				controllerMappingSwitch.put(c, s);
+				return;
+			}
+		}
 		controllerMappingSwitch.put(c, s);
 	}
 
@@ -218,8 +218,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-
-
+		hazelcast.addMemberListener(new ControllerMembershipListener(this));
 	}
 
 	
@@ -249,13 +248,9 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				}
 			}
 			controllerMappingSwitch.remove(c);
+			controllers.remove(c);
 		}
-		
-		
-		
-		
 	}
-
 }
 
 

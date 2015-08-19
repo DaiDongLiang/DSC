@@ -1265,7 +1265,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState(){
 			//cluster
-			clusterService.ControllerLoadIncrease(roleManager.getController().getControllerModel().getControllerId(), 1);
+
 			sendRoleRequest(roleManager.getOFControllerRole(getDpid()));
 		}
 	}
@@ -1291,7 +1291,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			//cluster
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
-			
+			clusterService.ControllerLoadIncrease(roleManager.getController().getControllerModel().getControllerId(), 1);
 			
 			initialRole = OFControllerRole.ROLE_MASTER;
 			if (OFSwitchManager.clearTablesOnEachTransitionToMaster) {
@@ -1433,7 +1433,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			//cluster
 			clusterService.removeMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
-			
+			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);		
 			if (initialRole == null) {
 				initialRole = OFControllerRole.ROLE_SLAVE;
 			}

@@ -5,18 +5,9 @@
 
 	<network>
 		<cluster-members>
-<<<<<<< HEAD
 
-
-
-			 <address>192.168.99.211</address>
-			<address>192.168.99.136</address>
-
-
-=======
 			<address>192.168.99.136</address>
 			<address>192.168.99.211</address>
->>>>>>> 6fc529520f47ff9049194ac95b0c1163d8634cfe
 		</cluster-members>
 		<smart-routing>true</smart-routing>
 		<redo-operation>true</redo-operation>

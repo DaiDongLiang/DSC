@@ -683,7 +683,6 @@ IFloodlightModule, IInfoProvider {
 		if(!clusterService.getMasterMap().containsKey(remoteDpid.toString())){
 			return Command.STOP;
 		}
-		System.out.println(remoteDpid.toString());
 
 		if (myLLDP == false) {
 			// This is not the LLDP sent by this controller.

@@ -10,7 +10,7 @@ import net.floodlightcontroller.core.module.IFloodlightService;
 public interface  IClusterService extends IFloodlightService{
 	
 	//控制器<->交换机映射
-	public void putControllerMappingSwitch(ControllerModel c,String dpid,String role);
+	public  void putControllerMappingSwitch(ControllerModel c,String dpid,String role);
 	public void removeControllerMappingSwitch(ControllerModel c,String dpid,String role);
 	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch();
 	//控制器集合
