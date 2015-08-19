@@ -42,7 +42,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/org.simpleframework.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/mr/下载/hazelcast-3.5.jar"/>
-	<classpathentry kind="lib" path="/home/mr/下载/hazelcast-client-3.5.jar"/>
+	<classpathentry kind="lib" path="lib/hazelcast-3.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/hazelcast-client-3.5.1.jar"/>
 	<classpathentry kind="output" path="target/bin"/>
 </classpath>
