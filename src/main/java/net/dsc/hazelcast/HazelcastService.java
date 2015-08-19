@@ -35,7 +35,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 
 	@Override
 	public <K, V> IMap<K,V> getMap(String MapName) {
-		IMap<K, V> map = client.getMap(MapName);
+		IMap<K, V> map = hazelcastInstance.getMap(MapName);
 		return map;
 	}
 	@Override
@@ -111,7 +111,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	}
 	@Override
 	public void addMemberListener(MembershipListener mebershipListener) {
-
+			
 		HazelcastListenerManager.addMemberListener(mebershipListener);	
 	}	
 

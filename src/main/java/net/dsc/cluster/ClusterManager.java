@@ -28,15 +28,31 @@ import org.projectfloodlight.openflow.types.U64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MapEvent;
 import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
+import com.hazelcast.core.MigrationEvent;
+import com.hazelcast.core.MigrationListener;
 import com.hazelcast.core.MultiMap;
+import com.hazelcast.map.MapPartitionLostEvent;
+import com.hazelcast.map.listener.EntryAddedListener;
+import com.hazelcast.map.listener.EntryEvictedListener;
+import com.hazelcast.map.listener.EntryRemovedListener;
+import com.hazelcast.map.listener.EntryUpdatedListener;
+import com.hazelcast.map.listener.MapClearedListener;
+import com.hazelcast.map.listener.MapEvictedListener;
+import com.hazelcast.map.listener.MapPartitionLostListener;
+import com.hazelcast.partition.PartitionLostEvent;
+import com.hazelcast.partition.PartitionLostListener;
 
 public class ClusterManager implements IFloodlightModule, IClusterService,
 		MembershipListener {
+	
+	public  static HashMap<String,String> mapTest  = new HashMap<String,String>();
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
 
@@ -194,18 +210,25 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
+		
 
 	}
 
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		hazelcast.addMemberListener(this);
+		
+	
+		
+		
+	
 	}
 
+	
 	// MembershipListener implements
 	@Override
 	public void memberAdded(MembershipEvent arg0) {
+		
 	}
 
 	@Override
@@ -234,6 +257,17 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				}
 			}
 		}
+		
+		
+		
+		
 	}
 
+	
+	
+	
+
+
 }
+
+

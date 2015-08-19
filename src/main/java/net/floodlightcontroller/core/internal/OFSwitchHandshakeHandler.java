@@ -1292,8 +1292,8 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 			
-			initialRole = OFControllerRole.ROLE_MASTER;
 			
+			initialRole = OFControllerRole.ROLE_MASTER;
 			if (OFSwitchManager.clearTablesOnEachTransitionToMaster) {
 				log.info("Clearing flow tables of {} on recent transition to MASTER.", sw.getId().toString());
 				clearAllTables();

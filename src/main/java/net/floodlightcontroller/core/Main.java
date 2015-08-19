@@ -54,6 +54,7 @@ public class Main {
 				parser.parseArgument(args);
 			} catch (CmdLineException e) {
 				parser.printUsage(System.out);
+				
 				System.exit(1);
 			}
 
