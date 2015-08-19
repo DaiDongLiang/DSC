@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.dsc.hazelcast.IHazelcastService;
+import net.dsc.hazelcast.listener.ControllerMembershipListener;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
@@ -25,6 +26,8 @@ import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.U64;
 import org.python.modules.synchronize;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +43,12 @@ import com.hazelcast.core.MultiMap;
 
 
 public class ClusterManager implements IFloodlightModule, IClusterService,
+ 
+	
+	
 
-		MembershipListener {
-	
-	
+
+		IControllerListener{
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
@@ -53,10 +58,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	protected IHazelcastService hazelcast;
 
 
-	 private List<ControllerModel> controllers;
-	 private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
-	 private IMap<String, Integer> controllerLoad;
-	 private IMap<String, String> masterMap;
+	private List<ControllerModel> controllers;
+	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
+	private IMap<String, Integer> controllerLoad;
+	private IMap<String, String> masterMap;
 
 	public ClusterManager() {
 	}
@@ -70,7 +75,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				min = controllerLoad.get(uuid);
 				result = uuid;
 			} else {
-				if (min > controllerLoad.get(uuid)) {
+				if (min >= controllerLoad.get(uuid)) {
 					min = controllerLoad.get(uuid);
 					result = uuid;
 				}
@@ -85,10 +90,15 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		if (num < 0)
 			throw new IllegalArgumentException("num < 0");
 		Integer i = controllerLoad.get(controllerId);
+		System.out.println("I---"+i);
 		if (null == i)
 			controllerLoad.put(controllerId, num);
 		else
 			controllerLoad.put(controllerId, i + num);
+
+		
+		log.info(controllerLoad.get(controllerId).toString());
+
 	}
 
 	@Override
@@ -211,46 +221,36 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 
+
 	}
 
 	
-	// MembershipListener implements
-	@Override
-	public void memberAdded(MembershipEvent arg0) {
-		
-	}
 
+	// IControllerListener implements
 	@Override
-	public void memberAttributeChanged(MemberAttributeEvent arg0) {
-	}
-
-	@Override
-	public void memberRemoved(MembershipEvent event) {
-		
+	public void controllerRemoved(MembershipEvent event) {	
 		Member m = event.getMember();
 		log.info("{} disconnected",m.getUuid());
-		ControllerModel c = new ControllerModel(m.getUuid(), m
-				.getSocketAddress().getAddress().toString());
-		System.out.println(controllerLoad);
-		System.out.println("[==================================]");
-		System.out.println(masterMap);
-		log.info("loadMap:{}",hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME));
+		ControllerModel c = new ControllerModel(m.getUuid(), m.getSocketAddress().getAddress().toString());
 		String uuid = getMinControllerLoad();
+		controllerLoad.remove(uuid);
 		if (uuid.equals(floodlightProvider.getControllerModel().getControllerId())) {
-			Collection<SwitchConnectModel> switchs = new ArrayList<SwitchConnectModel>(
-					controllerMappingSwitch.get(c));
-			controllerMappingSwitch.remove(c);
+			log.info("change master to {}",uuid);
+			Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);
 			for (SwitchConnectModel s : switchs) {
 				if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) {
 					DatapathId dpid = DatapathId.of(s.getDpid());
 					removeMasterMap(dpid.toString());
 					IOFSwitch sw = switchService.getSwitch(dpid);
 					log.info("change master {}<-->{}",uuid,dpid);
-					sw.writeRequest(sw.getOFFactory().buildRoleRequest()
+					sw.writeRequest(sw.getOFFactory()
+							.buildRoleRequest()
 							.setGenerationId(U64.ZERO)
-							.setRole(OFControllerRole.ROLE_MASTER).build());
+							.setRole(OFControllerRole.ROLE_MASTER).
+							build());
 				}
 			}
+			controllerMappingSwitch.remove(c);
 		}
 		
 		

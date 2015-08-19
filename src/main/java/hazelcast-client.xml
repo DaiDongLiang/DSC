@@ -7,8 +7,10 @@
 		<cluster-members>
 
 
+
 			 <address>172.31.29.58</address>
 			<address>172.31.58.245</address>
+
 
 		</cluster-members>
 		<smart-routing>true</smart-routing>

@@ -806,6 +806,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
     
     private void setConfigParams(Map<String, String> configParams) throws FloodlightModuleException {
+    	System.out.println(configParams.keySet());
         String ofPort = configParams.get("openflowPort");
         if (!Strings.isNullOrEmpty(ofPort)) {
             try {
@@ -841,7 +842,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         this.providerMap = new HashMap<String, List<IInfoProvider>>();
         
         setConfigParams(configParams);
-
         HARole initialRole = getInitialRole(configParams);
         this.notifiedRole = initialRole;
         this.shutdownService = new ShutdownServiceImpl();
@@ -857,8 +857,9 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
 
         this.counters = new ControllerCounters(debugCounterService);
         
-        //cluster
-        this.controller=new ControllerModel(hazelcast.getLocalMember().getUuid(),configParams.get("LocalIP"));
+
+        this.controller=new ControllerModel(hazelcast.getLocalMember().getUuid(),hazelcast.getLocalMember().getSocketAddress().getAddress().toString());
+
         clusterService.addController(controller);
         clusterService.ControllerLoadReset(controller.getControllerId());
         
