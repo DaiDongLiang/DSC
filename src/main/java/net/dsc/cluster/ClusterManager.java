@@ -20,7 +20,7 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
+
 
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
@@ -28,26 +28,17 @@ import org.projectfloodlight.openflow.types.U64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hazelcast.core.EntryEvent;
+
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.MapEvent;
+
 import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
-import com.hazelcast.core.MigrationEvent;
-import com.hazelcast.core.MigrationListener;
+
+
 import com.hazelcast.core.MultiMap;
-import com.hazelcast.map.MapPartitionLostEvent;
-import com.hazelcast.map.listener.EntryAddedListener;
-import com.hazelcast.map.listener.EntryEvictedListener;
-import com.hazelcast.map.listener.EntryRemovedListener;
-import com.hazelcast.map.listener.EntryUpdatedListener;
-import com.hazelcast.map.listener.MapClearedListener;
-import com.hazelcast.map.listener.MapEvictedListener;
-import com.hazelcast.map.listener.MapPartitionLostListener;
-import com.hazelcast.partition.PartitionLostEvent;
-import com.hazelcast.partition.PartitionLostListener;
+
 
 public class ClusterManager implements IFloodlightModule, IClusterService,
 		MembershipListener {
@@ -60,10 +51,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	protected IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
 
-	private List<ControllerModel> controllers;
-	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
-	private IMap<String, Integer> controllerLoad;
-	private IMap<String, String> masterMap;
+	private static List<ControllerModel> controllers;
+	private static  MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
+	private static IMap<String, Integer> controllerLoad;
+	private static  IMap<String, String> masterMap;
 
 	public ClusterManager() {
 	}
@@ -94,7 +85,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		if (null == i)
 			controllerLoad.put(controllerId, num);
 		else
-			controllerLoad.set(controllerId, i + num);
+			controllerLoad.put(controllerId, i + num);
 	}
 
 	@Override
