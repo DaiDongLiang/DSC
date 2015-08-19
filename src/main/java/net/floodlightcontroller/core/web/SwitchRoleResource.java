@@ -19,7 +19,9 @@ package net.floodlightcontroller.core.web;
 import java.io.IOException;
 import java.lang.Thread.State;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,9 @@ import org.projectfloodlight.openflow.types.U64;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
+import net.dsc.cluster.ControllerModel;
+import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.SwitchConnectModel;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 
@@ -45,60 +50,117 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.hazelcast.core.MultiMap;
 
 public class SwitchRoleResource extends ServerResource {
 
-	protected static Logger log = LoggerFactory.getLogger(SwitchRoleResource.class);
+	protected static Logger log = LoggerFactory
+			.getLogger(SwitchRoleResource.class);
 
-	private static final String STR_ROLE_PREFIX = "ROLE_"; /* enum OFControllerRole is ROLE_XXX, so trim the ROLE_ when printing */
-	private static final String STR_ROLE_MASTER = "MASTER"; /* these are all assumed uppercase within this class */
+	private static final String STR_ROLE_PREFIX = "ROLE_"; /*
+															 * enum
+															 * OFControllerRole
+															 * is ROLE_XXX, so
+															 * trim the ROLE_
+															 * when printing
+															 */
+	private static final String STR_ROLE_MASTER = "MASTER"; /*
+															 * these are all
+															 * assumed uppercase
+															 * within this class
+															 */
 	private static final String STR_ROLE_SLAVE = "SLAVE";
 	private static final String STR_ROLE_EQUAL = "EQUAL";
 	private static final String STR_ROLE_OTHER = "OTHER";
 
 	@Get("json")
-	public Map<String, String> getRole() {
-		IOFSwitchService switchService =
-				(IOFSwitchService)getContext().getAttributes().
-				get(IOFSwitchService.class.getCanonicalName());
+	public HashMap<String, HashMap<String, String>> getRole() {
+		IOFSwitchService switchService = (IOFSwitchService) getContext()
+				.getAttributes().get(IOFSwitchService.class.getCanonicalName());
 
-		String switchId = (String) getRequestAttributes().get(CoreWebRoutable.STR_SWITCH_ID);
-		HashMap<String, String> model = new HashMap<String, String>();
+		IClusterService clusterService = (IClusterService) getContext()//獲取服務
+				.getAttributes().get(IClusterService.class.getCanonicalName());
 
-		if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {
-			for (IOFSwitch sw: switchService.getAllSwitchMap().values()) {
+		String switchId = (String) getRequestAttributes().get(
+				CoreWebRoutable.STR_SWITCH_ID);
+
+		HashMap<String, HashMap<String, String>> model = new HashMap<String, HashMap<String, String>>();//添加加數據結構
+		MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole = clusterService
+				.getControllerMappingSwitch();
+		if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {//判斷查詢字段是否位ALL
+
+			for (IOFSwitch sw : switchService.getAllSwitchMap().values()) {//遍歷所有交換機
 				switchId = sw.getId().toString();
-				model.put(switchId, sw.getControllerRole().toString().replaceFirst(STR_ROLE_PREFIX, "")); 
+				HashMap<String, String> ControllerRole = new HashMap<String, String>();
+				for (ControllerModel controller : ControllerMappingRole
+						.keySet()) {
+					Collection<SwitchConnectModel> switches = ControllerMappingRole//遍歷控制器和交換機關係map
+							.get(controller);
+					Iterator<SwitchConnectModel> it = switches.iterator();//遍歷switch
+					while (it.hasNext()) {
+						SwitchConnectModel singleSwitch = it.next();
+						if (singleSwitch.getDpid().equals(switchId)) {//有switchId則添加
+							ControllerRole.put(controller.getControllerIp(),
+									singleSwitch.getRole());
+						}
+					}
+				}
+
+				model.put(switchId, ControllerRole);
 			}
 			return model;
 		} else {
+
 			try {
 				DatapathId dpid = DatapathId.of(switchId);
 				IOFSwitch sw = switchService.getSwitch(dpid);
+				HashMap<String, String> ReturnMessage = new HashMap<String, String>();
 				if (sw == null) {
-					model.put("ERROR", "Switch Manager could not locate switch DPID " + dpid.toString());
+
+					ReturnMessage.put("ERROR",
+							"Switch Manager could not locate switch DPID "
+									+ dpid.toString());
+					model.put("error", ReturnMessage);
 					return model;
-				} else {
-					model.put(dpid.toString(), sw.getControllerRole().toString().replaceFirst(STR_ROLE_PREFIX, ""));
+				} else {//添加單個
+					for (ControllerModel controller : ControllerMappingRole
+							.keySet()) {
+						Collection<SwitchConnectModel> switches = ControllerMappingRole
+								.get(controller);
+						Iterator<SwitchConnectModel> it = switches.iterator();
+						while (it.hasNext()) {
+							SwitchConnectModel singleSwitch = it.next();
+							if (singleSwitch.getDpid().equals(switchId)) {
+								ReturnMessage.put(controller.getControllerIp(),
+										singleSwitch.getRole());
+							}
+						}
+					}
+
+					model.put(dpid.toString(), ReturnMessage);
 					return model;
 				}
 			} catch (Exception e) {
-				model.put("ERROR", "Could not parse switch DPID " + switchId);
+				HashMap<String, String> ErrorMessage = new HashMap<String, String>();
+				ErrorMessage.put("ERROR", "Could not parse switch DPID "
+						+ switchId);
+				model.put("ERROR", ErrorMessage);
 				return model;
-			}	
+			}
 		}
 	}
 
 	/* for some reason @Post("json") isn't working here... */
 	@Post
 	public Map<String, String> setRole(String json) {
-		IOFSwitchService switchService =
-				(IOFSwitchService)getContext().getAttributes().
-				get(IOFSwitchService.class.getCanonicalName());
+		IOFSwitchService switchService = (IOFSwitchService) getContext()
+				.getAttributes().get(IOFSwitchService.class.getCanonicalName());
 		Map<String, String> retValue = new HashMap<String, String>();
 
-		String switchId = (String) getRequestAttributes().get(CoreWebRoutable.STR_SWITCH_ID);
+		String switchId = (String) getRequestAttributes().get(
+				CoreWebRoutable.STR_SWITCH_ID);
 
 		MappingJsonFactory f = new MappingJsonFactory();
 		JsonParser jp = null;
@@ -110,7 +172,6 @@ public class SwitchRoleResource extends ServerResource {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 
 			jp.nextToken();
 			if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
@@ -130,39 +191,52 @@ public class SwitchRoleResource extends ServerResource {
 					role = jp.getText();
 
 					if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {
-						for (IOFSwitch sw: switchService.getAllSwitchMap().values()) {
-							List<SetConcurrentRoleThread> activeThreads = new ArrayList<SetConcurrentRoleThread>(switchService.getAllSwitchMap().size());
+						for (IOFSwitch sw : switchService.getAllSwitchMap()
+								.values()) {
+							List<SetConcurrentRoleThread> activeThreads = new ArrayList<SetConcurrentRoleThread>(
+									switchService.getAllSwitchMap().size());
 							List<SetConcurrentRoleThread> pendingRemovalThreads = new ArrayList<SetConcurrentRoleThread>();
 							SetConcurrentRoleThread t;
 							t = new SetConcurrentRoleThread(sw, parseRole(role));
 							activeThreads.add(t);
 							t.start();
 
-							// Join all the threads after the timeout. Set a hard timeout
-							// of 12 seconds for the threads to finish. If the thread has not
-							// finished the switch has not replied yet and therefore we won't
+							// Join all the threads after the timeout. Set a
+							// hard timeout
+							// of 12 seconds for the threads to finish. If the
+							// thread has not
+							// finished the switch has not replied yet and
+							// therefore we won't
 							// add the switch's stats to the reply.
 							for (int iSleepCycles = 0; iSleepCycles < 12; iSleepCycles++) {
 								for (SetConcurrentRoleThread curThread : activeThreads) {
 									if (curThread.getState() == State.TERMINATED) {
-										retValue.put(curThread.getSwitch().getId().toString(), 
-												(curThread.getRoleReply() == null ? 
-														"Error communicating with switch. Role not changed." 
-														: curThread.getRoleReply().getRole().toString().replaceFirst(STR_ROLE_PREFIX, "")
-														)
-												);
+										retValue.put(
+												curThread.getSwitch().getId()
+														.toString(),
+												(curThread.getRoleReply() == null ? "Error communicating with switch. Role not changed."
+														: curThread
+																.getRoleReply()
+																.getRole()
+																.toString()
+																.replaceFirst(
+																		STR_ROLE_PREFIX,
+																		"")));
 										pendingRemovalThreads.add(curThread);
 									}
 								}
 
-								// remove the threads that have completed the queries to the switches
+								// remove the threads that have completed the
+								// queries to the switches
 								for (SetConcurrentRoleThread curThread : pendingRemovalThreads) {
 									activeThreads.remove(curThread);
 								}
-								// clear the list so we don't try to double remove them
+								// clear the list so we don't try to double
+								// remove them
 								pendingRemovalThreads.clear();
 
-								// if we are done finish early so we don't always get the worst case
+								// if we are done finish early so we don't
+								// always get the worst case
 								if (activeThreads.isEmpty()) {
 									break;
 								}
@@ -171,8 +245,11 @@ public class SwitchRoleResource extends ServerResource {
 								try {
 									Thread.sleep(1000);
 								} catch (InterruptedException e) {
-									log.error("Interrupted while waiting for role replies", e);
-									retValue.put("ERROR", "Thread sleep interrupted while waiting for role replies.");
+									log.error(
+											"Interrupted while waiting for role replies",
+											e);
+									retValue.put("ERROR",
+											"Thread sleep interrupted while waiting for role replies.");
 								}
 
 							}
@@ -183,19 +260,25 @@ public class SwitchRoleResource extends ServerResource {
 							DatapathId dpid = DatapathId.of(switchId);
 							IOFSwitch sw = switchService.getSwitch(dpid);
 							if (sw == null) {
-								retValue.put("ERROR", "Switch Manager could not locate switch DPID " + dpid.toString());
+								retValue.put("ERROR",
+										"Switch Manager could not locate switch DPID "
+												+ dpid.toString());
 							} else {
-								OFRoleReply reply = setSwitchRole(sw, parseRole(role));
-								retValue.put(sw.getId().toString(), 
-										(reply == null ? 
-												"Error communicating with switch. Role not changed." 
-												: reply.getRole().toString().replaceFirst(STR_ROLE_PREFIX, "")
-												)
-										);
+								OFRoleReply reply = setSwitchRole(sw,
+										parseRole(role));
+								retValue.put(
+										sw.getId().toString(),
+										(reply == null ? "Error communicating with switch. Role not changed."
+												: reply.getRole()
+														.toString()
+														.replaceFirst(
+																STR_ROLE_PREFIX,
+																"")));
 							}
 						} catch (Exception e) {
-							retValue.put("ERROR", "Could not parse switch DPID " + switchId);
-						}	
+							retValue.put("ERROR",
+									"Could not parse switch DPID " + switchId);
+						}
 					}
 					break;
 				default:
@@ -205,7 +288,8 @@ public class SwitchRoleResource extends ServerResource {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			retValue.put("ERROR", "Caught IOException while parsing JSON POST request in role request.");
+			retValue.put("ERROR",
+					"Caught IOException while parsing JSON POST request in role request.");
 		}
 		return retValue;
 	}
@@ -240,7 +324,7 @@ public class SwitchRoleResource extends ServerResource {
 	}
 
 	private static OFRoleReply setSwitchRole(IOFSwitch sw, OFControllerRole role) {
-		try {	
+		try {
 			if (sw.getOFFactory().getVersion().compareTo(OFVersion.OF_12) < 0) {
 				OFNiciraControllerRole nrole;
 				switch (role) {
@@ -256,41 +340,63 @@ public class SwitchRoleResource extends ServerResource {
 					break;
 				case ROLE_NOCHANGE:
 					log.error("Nicira extension does not support NOCHANGE role. Thus, we won't change the role.");
-					return OFFactories.getFactory(OFVersion.OF_13).buildRoleReply().setRole(sw.getControllerRole()).setGenerationId(U64.ZERO).build();
+					return OFFactories.getFactory(OFVersion.OF_13)
+							.buildRoleReply().setRole(sw.getControllerRole())
+							.setGenerationId(U64.ZERO).build();
 				default:
 					log.error("Impossible to have anything other than MASTER, OTHER, or SLAVE for Nicira role.");
-					return OFFactories.getFactory(OFVersion.OF_13).buildRoleReply().setRole(sw.getControllerRole()).setGenerationId(U64.ZERO).build();
+					return OFFactories.getFactory(OFVersion.OF_13)
+							.buildRoleReply().setRole(sw.getControllerRole())
+							.setGenerationId(U64.ZERO).build();
 				}
 
-				ListenableFuture<OFNiciraControllerRoleReply> future = sw.writeRequest(sw.getOFFactory().buildNiciraControllerRoleRequest()
-						.setRole(nrole)
-						.build());
-				OFNiciraControllerRoleReply nreply = future.get(10, TimeUnit.SECONDS);
+				ListenableFuture<OFNiciraControllerRoleReply> future = sw
+						.writeRequest(sw.getOFFactory()
+								.buildNiciraControllerRoleRequest()
+								.setRole(nrole).build());
+				OFNiciraControllerRoleReply nreply = future.get(10,
+						TimeUnit.SECONDS);
 				if (nreply != null) {
-					/* Turn the OFControllerRoleReply into a OFNiciraControllerRoleReply */
+					/*
+					 * Turn the OFControllerRoleReply into a
+					 * OFNiciraControllerRoleReply
+					 */
 					switch (nreply.getRole()) {
 					case ROLE_MASTER:
-						return OFFactories.getFactory(OFVersion.OF_13).buildRoleReply().setRole(OFControllerRole.ROLE_MASTER).setGenerationId(U64.ZERO).build();
+						return OFFactories.getFactory(OFVersion.OF_13)
+								.buildRoleReply()
+								.setRole(OFControllerRole.ROLE_MASTER)
+								.setGenerationId(U64.ZERO).build();
 					case ROLE_OTHER:
-						return OFFactories.getFactory(OFVersion.OF_13).buildRoleReply().setRole(OFControllerRole.ROLE_EQUAL).setGenerationId(U64.ZERO).build();
+						return OFFactories.getFactory(OFVersion.OF_13)
+								.buildRoleReply()
+								.setRole(OFControllerRole.ROLE_EQUAL)
+								.setGenerationId(U64.ZERO).build();
 					case ROLE_SLAVE:
-						return OFFactories.getFactory(OFVersion.OF_13).buildRoleReply().setRole(OFControllerRole.ROLE_SLAVE).setGenerationId(U64.ZERO).build();
+						return OFFactories.getFactory(OFVersion.OF_13)
+								.buildRoleReply()
+								.setRole(OFControllerRole.ROLE_SLAVE)
+								.setGenerationId(U64.ZERO).build();
 					default:
-						log.error("Impossible to have anything other than MASTER, OTHER, or SLAVE for Nicira role: {}.", nreply.getRole().toString());
+						log.error(
+								"Impossible to have anything other than MASTER, OTHER, or SLAVE for Nicira role: {}.",
+								nreply.getRole().toString());
 						break;
 					}
 				} else {
-					log.error("Did not receive Nicira role reply for switch {}.", sw.getId().toString());
+					log.error(
+							"Did not receive Nicira role reply for switch {}.",
+							sw.getId().toString());
 				}
 			} else {
-				ListenableFuture<OFRoleReply> future = sw.writeRequest(sw.getOFFactory().buildRoleRequest()
-						.setGenerationId(U64.ZERO)
-						.setRole(role)
-						.build());
+				ListenableFuture<OFRoleReply> future = sw.writeRequest(sw
+						.getOFFactory().buildRoleRequest()
+						.setGenerationId(U64.ZERO).setRole(role).build());
 				return future.get(10, TimeUnit.SECONDS);
 			}
 		} catch (Exception e) {
-			log.error("Failure setting switch {} role to {}.", sw.toString(), role.toString());
+			log.error("Failure setting switch {} role to {}.", sw.toString(),
+					role.toString());
 			log.error(e.getMessage());
 		}
 		return null;
@@ -299,15 +405,16 @@ public class SwitchRoleResource extends ServerResource {
 	private static OFControllerRole parseRole(String role) {
 		if (role == null || role.isEmpty()) {
 			return OFControllerRole.ROLE_NOCHANGE;
-		} 
+		}
 
-		role = role.toUpperCase();		
+		role = role.toUpperCase();
 
 		if (role.contains(STR_ROLE_MASTER)) {
 			return OFControllerRole.ROLE_MASTER;
 		} else if (role.contains(STR_ROLE_SLAVE)) {
 			return OFControllerRole.ROLE_SLAVE;
-		} else if (role.contains(STR_ROLE_EQUAL) || role.contains(STR_ROLE_OTHER)) {
+		} else if (role.contains(STR_ROLE_EQUAL)
+				|| role.contains(STR_ROLE_OTHER)) {
 			return OFControllerRole.ROLE_EQUAL;
 		} else {
 			return OFControllerRole.ROLE_NOCHANGE;

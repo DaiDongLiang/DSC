@@ -647,12 +647,11 @@ IFloodlightModule, IInfoProvider {
 		long otherId = 0;
 		boolean myLLDP = false;
 		Boolean isReverse = null;
-
+		DatapathId remoteDpid = null;
 		ByteBuffer portBB = ByteBuffer.wrap(lldp.getPortId().getValue());
 		portBB.position(1);
 
 		OFPort remotePort = OFPort.of(portBB.getShort());
-		IOFSwitch remoteSwitch = null;
 
 		// Verify this LLDP packet matches what we're looking for
 		for (LLDPTLV lldptlv : lldp.getOptionalTLVList()) {
@@ -662,7 +661,7 @@ IFloodlightModule, IInfoProvider {
 					&& lldptlv.getValue()[2] == (byte) 0xe1
 					&& lldptlv.getValue()[3] == 0x0) {
 				ByteBuffer dpidBB = ByteBuffer.wrap(lldptlv.getValue());
-				remoteSwitch = switchService.getSwitch(DatapathId.of(dpidBB.getLong(4)));
+				remoteDpid = DatapathId.of(dpidBB.getLong(4));
 			} else if (lldptlv.getType() == 12 && lldptlv.getLength() == 8) {
 				otherId = ByteBuffer.wrap(lldptlv.getValue()).getLong();
 				if (myId == otherId) myLLDP = true;
@@ -674,7 +673,9 @@ IFloodlightModule, IInfoProvider {
 					isReverse = true;
 			}
 		}
-
+		if(clusterService.getMasterMap().containsKey(remoteDpid.toString())){
+			return Command.STOP;
+		}
 		if (myLLDP == false) {
 			// This is not the LLDP sent by this controller.
 			// If the LLDP message has multicast bit set, then we need to
@@ -734,7 +735,7 @@ IFloodlightModule, IInfoProvider {
 
 		// Store the time of update to this link, and push it out to
 		// routingEngine
-		Link lt = new Link(sw, remotePort,
+		Link lt = new Link(remoteDpid, remotePort,
 				iofSwitch.getId(), inPort);
 
 		if (!isLinkAllowed(lt.getSrc(), lt.getSrcPort(),
@@ -1585,8 +1586,8 @@ IFloodlightModule, IInfoProvider {
 		ByteBuffer bb = ByteBuffer.allocate(10);
 
 //		long result = System.nanoTime();
-		long result=33417545029289L;
-		try{
+		long result=33417545029289L * prime;
+		/*try{
 			// Use some data specific to the machine this controller is
 			// running on. In this case: the list of network interfaces
 			Enumeration<NetworkInterface> ifaces =
@@ -1597,7 +1598,7 @@ IFloodlightModule, IInfoProvider {
 		} catch (SocketException e) {
 			log.warn("Could not get list of interfaces of local machine to " +
 					"encode in TLV: {}", e.toString());
-		}
+		}*/
 		// set the first 4 bits to 0.
 		result = result & (0x0fffffffffffffffL);
 
