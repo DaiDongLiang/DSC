@@ -50,10 +50,10 @@
 
 
                
-                <interface>192.168.99.211</interface>
+                <interface>172.31.29.58</interface>
                 <member-list>
-                    <member>192.168.99.211</member>
-                    <member>192.168.99.136</member>
+                    <member>172.31.29.58</member>
+                    <member>172.31.58.245</member>
 
 
                 </member-list>
@@ -145,7 +145,7 @@
         <!--
             Number of async backups. 0 means no backup.
         -->
-        <async-backup-count>2</async-backup-count>
+      <!--   <async-backup-count>0</async-backup-count> -->
         <!--
 			Maximum number of seconds for each entry to stay in the map. Entries that are
 			older than <time-to-live-seconds> and not updated for <time-to-live-seconds>

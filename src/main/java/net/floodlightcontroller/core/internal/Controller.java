@@ -858,7 +858,7 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         this.counters = new ControllerCounters(debugCounterService);
         
         //cluster
-        this.controller=new ControllerModel(hazelcast.getLocalMember().getUuid(),configParams.get("LocalIp"));
+        this.controller=new ControllerModel(hazelcast.getLocalMember().getUuid(),configParams.get("LocalIP"));
         clusterService.addController(controller);
         clusterService.ControllerLoadReset(controller.getControllerId());
         

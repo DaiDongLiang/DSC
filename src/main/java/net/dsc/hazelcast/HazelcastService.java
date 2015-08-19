@@ -107,9 +107,9 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 		return hazelcastInstance.getCluster().getLocalMember();
 		
 	}
+	
 	@Override
 	public void addMemberListener(MembershipListener mebershipListener) {
-			
 		HazelcastListenerManager.addMemberListener(mebershipListener);	
 	}	
 

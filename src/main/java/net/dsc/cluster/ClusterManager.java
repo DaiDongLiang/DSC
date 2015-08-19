@@ -21,23 +21,21 @@ import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
-
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.U64;
+import org.python.modules.synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 
-import com.hazelcast.core.IMap;
 
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
-
-
 import com.hazelcast.core.MultiMap;
 
 
@@ -55,10 +53,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	protected IHazelcastService hazelcast;
 
 
-	static private List<ControllerModel> controllers;
-	static private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
-	static private IMap<String, Integer> controllerLoad;
-	static private IMap<String, String> masterMap;
+	 private List<ControllerModel> controllers;
+	 private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
+	 private IMap<String, Integer> controllerLoad;
+	 private IMap<String, String> masterMap;
 
 	public ClusterManager() {
 	}
@@ -82,7 +80,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	}
 
 	@Override
-	public void ControllerLoadIncrease(String controllerId, int num) {
+	public synchronized void ControllerLoadIncrease(String controllerId, int num) {
 		log.info("controller {} increase {}",controllerId,num);
 		if (num < 0)
 			throw new IllegalArgumentException("num < 0");
