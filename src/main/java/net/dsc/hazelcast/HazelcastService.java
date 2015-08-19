@@ -93,8 +93,6 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
-		
-		
 	}
 	
 	@Override

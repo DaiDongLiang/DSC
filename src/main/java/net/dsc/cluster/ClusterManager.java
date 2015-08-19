@@ -1,7 +1,7 @@
 package net.dsc.cluster;
 
 import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_LOAD_MAP_NAME;
-import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_LIST_NAME;
 import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_SWITCH_MULITMAP_NAME;
 import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
 
@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hazelcast.core.EntryEvent;
+
+
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
 import com.hazelcast.core.Member;
@@ -50,9 +52,11 @@ import com.hazelcast.partition.PartitionLostEvent;
 import com.hazelcast.partition.PartitionLostListener;
 
 public class ClusterManager implements IFloodlightModule, IClusterService,
+
 		MembershipListener {
 	
-	public  static HashMap<String,String> mapTest  = new HashMap<String,String>();
+	
+
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
 
@@ -60,11 +64,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	protected IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
 
-	private List<ControllerModel> controllers;
-	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
-	private IMap<String, Integer> controllerLoad;
-	private IMap<String, String> masterMap;
-
+	static private List<ControllerModel> controllers;
+	static private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
+	static private IMap<String, Integer> controllerLoad;
+	static private IMap<String, String> masterMap;
 	public ClusterManager() {
 	}
 
@@ -88,6 +91,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	@Override
 	public void ControllerLoadIncrease(String controllerId, int num) {
+		log.info("controller {} increase {}",controllerId,num);
 		if (num < 0)
 			throw new IllegalArgumentException("num < 0");
 		Integer i = controllerLoad.get(controllerId);
@@ -205,23 +209,18 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
 		switchService = context.getServiceImpl(IOFSwitchService.class);
-		controllers = hazelcast.getList(CONTROLLER_MAP_NAME);
+		controllers = hazelcast.getList(CONTROLLER_LIST_NAME);
 		controllerMappingSwitch = hazelcast
 				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
-		
 
 	}
 
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		
-	
-		
-		
-	
+
 	}
 
 	
@@ -237,9 +236,15 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	@Override
 	public void memberRemoved(MembershipEvent event) {
+		
 		Member m = event.getMember();
+		log.info("{} disconnected",m.getUuid());
 		ControllerModel c = new ControllerModel(m.getUuid(), m
 				.getSocketAddress().getAddress().toString());
+		System.out.println(controllerLoad);
+		System.out.println("[==================================]");
+		System.out.println(masterMap);
+		log.info("loadMap:{}",hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME));
 		String uuid = getMinControllerLoad();
 		if (uuid.equals(floodlightProvider.getControllerModel().getControllerId())) {
 			Collection<SwitchConnectModel> switchs = new ArrayList<SwitchConnectModel>(
@@ -262,11 +267,6 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		
 		
 	}
-
-	
-	
-	
-
 
 }
 

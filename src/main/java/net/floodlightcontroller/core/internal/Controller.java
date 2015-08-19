@@ -906,7 +906,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         }
         
         addInfoProvider("summary", this);
-        log.info(controllerNodeIPsCache.get(controller.getControllerId()));
     }
     
     @LogMessageDoc(level="ERROR",
