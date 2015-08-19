@@ -90,14 +90,12 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		if (num < 0)
 			throw new IllegalArgumentException("num < 0");
 		Integer i = controllerLoad.get(controllerId);
-		System.out.println("I---"+i);
 		if (null == i)
 			controllerLoad.put(controllerId, num);
 		else
 			controllerLoad.put(controllerId, i + num);
 
 		
-		log.info(controllerLoad.get(controllerId).toString());
 
 	}
 

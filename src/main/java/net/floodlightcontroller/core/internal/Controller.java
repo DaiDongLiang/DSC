@@ -806,7 +806,6 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
     }
     
     private void setConfigParams(Map<String, String> configParams) throws FloodlightModuleException {
-    	System.out.println(configParams.keySet());
         String ofPort = configParams.get("openflowPort");
         if (!Strings.isNullOrEmpty(ofPort)) {
             try {
