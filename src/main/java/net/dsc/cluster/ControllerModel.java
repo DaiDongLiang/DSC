@@ -37,7 +37,7 @@ public class ControllerModel implements Serializable{
 		if(null==obj) return false;
 		if(!(obj instanceof SwitchConnectModel)) return false;
 		ControllerModel c=(ControllerModel)obj;
-		return c.getControllerId().equals(controllerId)||c.getControllerIp().equals(controllerIp);
+		return c.getControllerId().equals(controllerId)&&c.getControllerIp().equals(controllerIp);
 	}
 	@Override
 	public int hashCode() {

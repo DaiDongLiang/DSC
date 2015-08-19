@@ -47,10 +47,10 @@
                 <multicast-port>54327</multicast-port>
             </multicast>
             <tcp-ip enabled="true">
-                <interface>192.168.99.136</interface>
+                <interface>172.31.58.245</interface>
                 <member-list>
-                    <member>192.168.99.136</member>
-                    <member>192.168.99.211</member>
+                    <member>172.31.58.245</member>
+                    <member>172.31.29.58</member>
                 </member-list>
                 
             </tcp-ip>
@@ -139,7 +139,6 @@
         <!--
             Number of async backups. 0 means no backup.
         -->
-        <async-backup-count>2</async-backup-count>
         <!--
 			Maximum number of seconds for each entry to stay in the map. Entries that are
 			older than <time-to-live-seconds> and not updated for <time-to-live-seconds>
@@ -206,8 +205,6 @@
 
         <backup-count>2</backup-count>
 
-        <async-backup-count>2</async-backup-count>
-
         <time-to-live-seconds>0</time-to-live-seconds>
 
         <max-idle-seconds>0</max-idle-seconds>
@@ -269,8 +266,9 @@
     </serialization>
 
     <services enable-defaults="true"/>
-	
+	<!-- 
 	<listeners>
-		<listener>net.dsc.cluster.ClusterManager</listener>
+		<listener>net.dsc.hazelcast.listener.ControllerMembershipListener</listener>
 	</listeners>
+	 -->
 </hazelcast>
