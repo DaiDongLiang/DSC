@@ -16,7 +16,7 @@
 
 package net.floodlightcontroller.staticflowentry.web;
 
-import net.dsc.cluster.web.ControllerSwitchesResource;
+import net.dsc.cluster.web.SwitchesResource;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 
 import org.projectfloodlight.openflow.types.DatapathId;
@@ -48,7 +48,7 @@ public class ClearStaticFlowEntriesResource extends ServerResource {
                 return "{\"status\":\"Deleted all flows for switch " + param + ".\"}";
             } catch (NumberFormatException e){
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, 
-                          ControllerSwitchesResource.DPID_ERROR);
+                          SwitchesResource.DPID_ERROR);
                 return "'{\"status\":\"Could not delete flows requested! See controller log for details.\"}'";
             }
         }

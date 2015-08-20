@@ -17,19 +17,16 @@
 
 package net.dsc.cluster.web;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.SwitchConnectModel;
-import net.floodlightcontroller.core.internal.IOFSwitchService;
-import net.floodlightcontroller.core.IOFSwitch;
+import net.dsc.cluster.SwitchModel;
+import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
 
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
-
-import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -38,17 +35,19 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * 得到一个已连接控制器的交换机列表
  * @author readams
  */
-public class ControllerSwitchesResource extends ServerResource {
+public class SwitchesResource extends ServerResource {
     
     public static final String DPID_ERROR = "Invalid switch DPID string. Must be a 64-bit value in the form 00:11:22:33:44:55:66:77.";
     public static class DatapathIDJsonSerializerWrapper {
         private final DatapathId dpid;
+        private final String version;
         private final String inetAddress; 
-        private final long connectedSince;
-        public DatapathIDJsonSerializerWrapper(DatapathId dpid, String inetAddress, long connectedSince) {
+        private final String switch_add_time;
+        public DatapathIDJsonSerializerWrapper(DatapathId dpid, String inetAddress, String switch_add_time,String version) {
             this.dpid = dpid;
             this.inetAddress = inetAddress;
-            this.connectedSince = connectedSince;
+            this.switch_add_time = switch_add_time;
+            this.version=version;
         }
         
         @JsonSerialize(using=DPIDSerializer.class)
@@ -58,20 +57,23 @@ public class ControllerSwitchesResource extends ServerResource {
         public String getInetAddress() {
             return inetAddress;
         }
-        public long getConnectedSince() {
-            return connectedSince;
+        public String getConnectedSince() {
+            return switch_add_time;
         }
+
+		public String getVersion() {
+			return version;
+		}
+        
     }
 
     @Get("json")
     public Set<DatapathIDJsonSerializerWrapper> retrieve(){
-        IClusterService clusterService = 
-                (IClusterService) getContext().getAttributes().
-                    get(IClusterService.class.getCanonicalName());
+        IClusterService clusterService = (IClusterService) getContext().getAttributes().get(IClusterService.class.getCanonicalName());
         
         Set<DatapathIDJsonSerializerWrapper> dpidSets = new HashSet<DatapathIDJsonSerializerWrapper>();
-        for(SwitchConnectModel s:clusterService.getSwithcs().values()){
-            dpidSets.add(new DatapathIDJsonSerializerWrapper(DatapathId.of(s.getDpid()),s.getSwitchIP(),s.getConnectedSince().getTime()));	
+        for(SwitchModel s:clusterService.getSwithcs().values()){
+            dpidSets.add(new DatapathIDJsonSerializerWrapper(DatapathId.of(s.getDpid()),s.getIp(),s.getDate().toString(),s.getVersoin()));	
         }
         return dpidSets;
     }

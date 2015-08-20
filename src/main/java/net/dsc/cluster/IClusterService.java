@@ -29,10 +29,11 @@ public interface  IClusterService extends IFloodlightService{
 	public void ControllerLoadReduce(String controllerId,int num);
 	public void ControllerLoadReset(String controllerId);
 	public List<String> getSortedControllerLoad();
+	public IMap<String , Integer> getControllerLoad();
 	
 	//交换机集合
-	public void putSwitch(String dpid,String role,String switchIP);
+	public void putSwitch(SwitchModel s);
 	public void removeSwitch(String dpid);
-	public IMap<String, SwitchConnectModel> getSwithcs();
+	public IMap<String, SwitchModel> getSwithcs();
 	
 }

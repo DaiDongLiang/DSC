@@ -11,7 +11,8 @@ public class ClusterWebRoutable implements RestletRoutable{
 	@Override
 	public Restlet getRestlet(Context context) {
 		Router router = new Router(context);
-        router.attach("/controller/switches/json", ControllerSwitchesResource.class);
+        router.attach("/switches/json", SwitchesResource.class);
+        router.attach("/controllers/json", ControllersResource.class);
 		return router;
 	}
 
