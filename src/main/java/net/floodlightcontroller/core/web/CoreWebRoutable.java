@@ -40,6 +40,7 @@ public class CoreWebRoutable implements RestletRoutable {
 	public static final String STR_LAYER = "layer";
 	public static final String STR_ALL = "all";
 	public static final String STR_ROLE = "role";
+	public static final String STR_CONTROLLER="controllerIp";
 	
     @Override
     public String basePath() {
@@ -47,7 +48,11 @@ public class CoreWebRoutable implements RestletRoutable {
     }
     @Override
     public Restlet getRestlet(Context context) {
+    	
+    	
+    	
         Router router = new Router(context);
+     
         router.attach("/module/all/json", ModuleLoaderResource.class);
         router.attach("/module/loaded/json", LoadedModuleLoaderResource.class);
         router.attach("/switch/{" + STR_SWITCH_ID + "}/role/json", SwitchRoleResource.class);

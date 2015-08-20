@@ -247,6 +247,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		hazelcast.addMemberListener(new ControllerMembershipListener(this));
 		if (restApiService != null)
 			restApiService.addRestletRoutable(new ClusterWebRoutable());
+
 	}
 
 	// IControllerListener implements
@@ -255,8 +256,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		Member m = event.getMember();
 		log.info("{} disconnected",m.getUuid());
 		ControllerModel c = new ControllerModel(m.getUuid(), m.getSocketAddress().getAddress().toString());
+		controllerLoad.remove(m.getUuid());
 		String uuid = getSortedControllerLoad().get(0);
-		controllerLoad.remove(uuid);
 		if (uuid.equals(floodlightProvider.getControllerModel().getControllerId())) {
 			log.info("change master to {}",uuid);
 			Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);

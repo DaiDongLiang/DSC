@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.dsc.hazelcast.message.FlowMessage;
+import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
@@ -93,6 +94,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
+		HazelcastListenerManager.addListenRoleChange(getLocalMember().getUuid());
 	}
 	
 	@Override
@@ -111,6 +113,14 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule{
 	@Override
 	public void addMemberListener(MembershipListener mebershipListener) {
 		HazelcastListenerManager.addMemberListener(mebershipListener);	
+	}
+	@Override
+	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId) {
+		ITopic<RoleMessage> topic = client.getTopic(ControllerId);
+		topic.publish(roleMessage);
+		
 	}	
+	
+	
 
 }
