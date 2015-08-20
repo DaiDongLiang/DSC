@@ -129,12 +129,13 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 	public void addMemberListener(MembershipListener mebershipListener) {
 		HazelcastListenerManager.addMemberListener(mebershipListener);	
 	}
+	
 	@Override
 	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId) {
 		ITopic<RoleMessage> topic = client.getTopic(ControllerId);
 		topic.publish(roleMessage);
-		
 	}
+	
 	@Override
 	public void onMessage(Message<RoleMessage> message) {
 		RoleMessage roleMessage = message.getMessageObject();
@@ -147,10 +148,8 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 				.setGenerationId(U64.ZERO)
 				.setRole(controllerRole).
 				build());
-		
-		
 	}	
-	
+
 	private static OFControllerRole parseRole(String role) {
 		if (role == null || role.isEmpty()) {
 			return OFControllerRole.ROLE_NOCHANGE;
@@ -170,6 +169,4 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 		}
 	}
 	
-	
-
 }
