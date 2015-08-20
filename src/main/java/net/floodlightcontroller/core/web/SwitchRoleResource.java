@@ -80,7 +80,7 @@ public class SwitchRoleResource extends ServerResource {
 	private static final String STR_ROLE_EQUAL = "EQUAL";
 	private static final String STR_ROLE_OTHER = "OTHER";
 
-	private boolean isControllerMasterSwitch;
+	private static boolean isControllerMasterSwitch = false;
 
 	@Get("json")
 	public HashMap<String, HashMap<String, String>> getRole() {
@@ -179,10 +179,11 @@ public class SwitchRoleResource extends ServerResource {
 
 		MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole = clusterService
 				.getControllerMappingSwitch();
-		
+	
 		IMap<String,ControllerModel> controllers = clusterService.getControllers();
 
 		IMap<String, String> masterMap = clusterService.getMasterMap();
+		
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
 
 		String localId = floodlightProvider.getControllerModel()
@@ -197,7 +198,7 @@ public class SwitchRoleResource extends ServerResource {
 		JsonParser jp = null;
 		String role = null;
 		String controllerId = null;
-
+		System.out.println(masterMap.values());
 		try {
 			jp = f.createJsonParser(json);
 			while (jp.nextToken() != JsonToken.END_OBJECT) {
@@ -205,14 +206,18 @@ public class SwitchRoleResource extends ServerResource {
 				if ("controllerId".equals(fieldName)) {
 					jp.nextToken();
 					controllerId = jp.getText();
+					System.out.println(controllerId);
 				}
 
 				if ("role".equals(fieldName)) {
 					jp.nextToken();
 					role = jp.getText();
+					System.out.println(role);
 				}
 
 			}
+			
+			
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -226,9 +231,13 @@ public class SwitchRoleResource extends ServerResource {
 		if (controllerId == null || role == null) {//解析错误
 
 			retValue.put("error", "can not parse json" + json);
+			return retValue;
+			
 		}
-
+		System.out.println(masterMap.values());
+		isControllerMasterSwitch  = masterMap.get(switchId).equals(controllerId);
 		for (String dpid : masterMap.keySet()) {//判断switchId是否为存在的switchId
+			System.out.println(dpid);
 			if (switchId.equals(dpid)) {
 				isSwitchId = true;
 				break;
@@ -236,6 +245,7 @@ public class SwitchRoleResource extends ServerResource {
 		}
 
 		for (ControllerModel controller : ControllerMappingRole.keySet()) {//判断controllerId是否存在
+			System.out.println(controller.getControllerId());
 			if (controller.getControllerId().equals(controllerId)) {
 				isControllerId = true;
 				break;
@@ -250,16 +260,18 @@ public class SwitchRoleResource extends ServerResource {
 			boolean isContollerMasterSwitch = masterControllerId .equals(
 					localId);// 判断本地控制器是否是该交换机master
 			if (controllerId.equals(localId)) {// 判断请求id是否为本地id
-
+				
 				switch (controllerRole) {
 
 				default:
 					
 					retValue.put("error", "not support role");
 					return retValue;
+				
 					
 
 				case ROLE_MASTER:// 如果请求role为master
+					masterMap.put(switchId, localId);
 					if(isContollerMasterSwitch){//如果请求控制器是交换机的master
 						retValue.put("sorry","the controller already have been the master of switch");
 						return retValue;
@@ -269,6 +281,7 @@ public class SwitchRoleResource extends ServerResource {
 								
 								.buildRoleRequest().setGenerationId(U64.ZERO)
 								.setRole(controllerRole).build());
+						
 						hazelcastService.publishRoleMessage(new RoleMessage("SLAVE",switchId), controllerId);
 						//让原来的master成为slave
 						retValue.put("success","请求已发送");
@@ -279,11 +292,11 @@ public class SwitchRoleResource extends ServerResource {
 					
 
 				case ROLE_SLAVE:// 如果请求role为slave
-
-					if (isControllerMasterSwitch) {// 如果请求控制器是交换机的master
 					
+					if (isControllerMasterSwitch) {// 如果请求控制器是交换机的master
+						System.out.println("请求控制器是交换机master");
 						
-						selectMaster(sortList, ControllerMappingRole, controllers, switchId, hazelcastService);//重新选主
+						//selectMaster(sortList, ControllerMappingRole, controllers, switchId, hazelcastService);//重新选主
 						
 						sw.writeRequest(sw.getOFFactory()
 								// 让自己成为slave
@@ -346,7 +359,7 @@ public class SwitchRoleResource extends ServerResource {
 			}
 
 		} else {
-			retValue.put("error", "controllerIp  or switchId is not right");
+			retValue.put("error", "controllerId or switchId is not right");
 		}
 
 		retValue.put(controllerId, role);

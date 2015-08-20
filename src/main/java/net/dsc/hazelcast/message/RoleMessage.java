@@ -1,7 +1,13 @@
 package net.dsc.hazelcast.message;
 
-public class RoleMessage {
+import java.io.Serializable;
+
+public class RoleMessage implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public String Role ;
 	public String SwitchId;
 	
