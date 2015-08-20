@@ -20,6 +20,7 @@ package net.floodlightcontroller.core.web;
 import net.floodlightcontroller.core.module.ModuleLoaderResource;
 import net.floodlightcontroller.restserver.RestletRoutable;
 
+import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
@@ -39,6 +40,7 @@ public class CoreWebRoutable implements RestletRoutable {
 	public static final String STR_LAYER = "layer";
 	public static final String STR_ALL = "all";
 	public static final String STR_ROLE = "role";
+	public static final String STR_CONTROLLER="controllerIp";
 	
     @Override
     public String basePath() {
@@ -47,7 +49,11 @@ public class CoreWebRoutable implements RestletRoutable {
 
     @Override
     public Restlet getRestlet(Context context) {
+    	
+    	
+    	
         Router router = new Router(context);
+     
         router.attach("/module/all/json", ModuleLoaderResource.class);
         router.attach("/module/loaded/json", LoadedModuleLoaderResource.class);
         router.attach("/switch/{" + STR_SWITCH_ID + "}/role/json", SwitchRoleResource.class);

@@ -40,6 +40,9 @@ import org.restlet.resource.ServerResource;
 import net.dsc.cluster.ControllerModel;
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.SwitchConnectModel;
+import net.dsc.hazelcast.IHazelcastService;
+import net.dsc.hazelcast.message.RoleMessage;
+import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 
@@ -47,11 +50,13 @@ import org.restlet.resource.Get;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
 public class SwitchRoleResource extends ServerResource {
@@ -75,33 +80,36 @@ public class SwitchRoleResource extends ServerResource {
 	private static final String STR_ROLE_EQUAL = "EQUAL";
 	private static final String STR_ROLE_OTHER = "OTHER";
 
+	private boolean isControllerMasterSwitch;
+
 	@Get("json")
 	public HashMap<String, HashMap<String, String>> getRole() {
 		IOFSwitchService switchService = (IOFSwitchService) getContext()
 				.getAttributes().get(IOFSwitchService.class.getCanonicalName());
 
-		IClusterService clusterService = (IClusterService) getContext()//獲取服務
+		IClusterService clusterService = (IClusterService) getContext()// 獲取服務
 				.getAttributes().get(IClusterService.class.getCanonicalName());
 
 		String switchId = (String) getRequestAttributes().get(
 				CoreWebRoutable.STR_SWITCH_ID);
 
-		HashMap<String, HashMap<String, String>> model = new HashMap<String, HashMap<String, String>>();//添加加數據結構
+		HashMap<String, HashMap<String, String>> model = new HashMap<String, HashMap<String, String>>();// 添加加數據結構
 		MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole = clusterService
 				.getControllerMappingSwitch();
-		if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {//判斷查詢字段是否位ALL
 
-			for (IOFSwitch sw : switchService.getAllSwitchMap().values()) {//遍歷所有交換機
+		if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {// 判斷查詢字段是否位ALL
+
+			for (IOFSwitch sw : switchService.getAllSwitchMap().values()) {// 遍歷所有交換機
 				switchId = sw.getId().toString();
 				HashMap<String, String> ControllerRole = new HashMap<String, String>();
 				for (ControllerModel controller : ControllerMappingRole
 						.keySet()) {
-					Collection<SwitchConnectModel> switches = ControllerMappingRole//遍歷控制器和交換機關係map
+					Collection<SwitchConnectModel> switches = ControllerMappingRole// 遍歷控制器和交換機關係map
 							.get(controller);
-					Iterator<SwitchConnectModel> it = switches.iterator();//遍歷switch
+					Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch
 					while (it.hasNext()) {
 						SwitchConnectModel singleSwitch = it.next();
-						if (singleSwitch.getDpid().equals(switchId)) {//有switchId則添加
+						if (singleSwitch.getDpid().equals(switchId)) {// 有switchId則添加
 							ControllerRole.put(controller.getControllerIp(),
 									singleSwitch.getRole());
 						}
@@ -124,7 +132,7 @@ public class SwitchRoleResource extends ServerResource {
 									+ dpid.toString());
 					model.put("error", ReturnMessage);
 					return model;
-				} else {//添加單個
+				} else {// 添加單個
 					for (ControllerModel controller : ControllerMappingRole
 							.keySet()) {
 						Collection<SwitchConnectModel> switches = ControllerMappingRole
@@ -155,143 +163,232 @@ public class SwitchRoleResource extends ServerResource {
 	/* for some reason @Post("json") isn't working here... */
 	@Post
 	public Map<String, String> setRole(String json) {
+		
+		IFloodlightProviderService floodlightProvider = (IFloodlightProviderService) getContext()
+				.getAttributes().get(
+						IFloodlightProviderService.class.getCanonicalName());
+
+		IClusterService clusterService = (IClusterService) getContext()// 獲取cluster服務
+				.getAttributes().get(IClusterService.class.getCanonicalName());
+
+		IHazelcastService hazelcastService = (IHazelcastService) getContext().// 获取hazelcast服务
+				getAttributes().get(IHazelcastService.class.getCanonicalName());
+
 		IOFSwitchService switchService = (IOFSwitchService) getContext()
 				.getAttributes().get(IOFSwitchService.class.getCanonicalName());
-		Map<String, String> retValue = new HashMap<String, String>();
+
+		MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole = clusterService
+				.getControllerMappingSwitch();
+
+		IMap<String, String> masterMap = clusterService.getMasterMap();
+		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
+
+		String localId = floodlightProvider.getControllerModel()
+				.getControllerId();
 
 		String switchId = (String) getRequestAttributes().get(
 				CoreWebRoutable.STR_SWITCH_ID);
 
+		boolean isControllerId = false;
+		boolean isSwitchId = false;
 		MappingJsonFactory f = new MappingJsonFactory();
 		JsonParser jp = null;
 		String role = null;
+		String controllerId = null;
 
 		try {
-			try {
-				jp = f.createJsonParser(json);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			jp.nextToken();
-			if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
-				throw new IOException("Expected START_OBJECT");
-			}
-
+			jp = f.createJsonParser(json);
 			while (jp.nextToken() != JsonToken.END_OBJECT) {
-				if (jp.getCurrentToken() != JsonToken.FIELD_NAME) {
-					throw new IOException("Expected FIELD_NAME");
+				String fieldName = jp.getCurrentName();
+				if ("controllerId".equals(fieldName)) {
+					jp.nextToken();
+					controllerId = jp.getText();
 				}
 
-				String n = jp.getCurrentName().toLowerCase();
-				jp.nextToken();
-
-				switch (n) {
-				case CoreWebRoutable.STR_ROLE:
+				if ("role".equals(fieldName)) {
+					jp.nextToken();
 					role = jp.getText();
+				}
 
-					if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) {
-						for (IOFSwitch sw : switchService.getAllSwitchMap()
-								.values()) {
-							List<SetConcurrentRoleThread> activeThreads = new ArrayList<SetConcurrentRoleThread>(
-									switchService.getAllSwitchMap().size());
-							List<SetConcurrentRoleThread> pendingRemovalThreads = new ArrayList<SetConcurrentRoleThread>();
-							SetConcurrentRoleThread t;
-							t = new SetConcurrentRoleThread(sw, parseRole(role));
-							activeThreads.add(t);
-							t.start();
+			}
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retValue.put("error", "can not parse json" + json);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retValue.put("error", "can not parse json" + json);
+		}
 
-							// Join all the threads after the timeout. Set a
-							// hard timeout
-							// of 12 seconds for the threads to finish. If the
-							// thread has not
-							// finished the switch has not replied yet and
-							// therefore we won't
-							// add the switch's stats to the reply.
-							for (int iSleepCycles = 0; iSleepCycles < 12; iSleepCycles++) {
-								for (SetConcurrentRoleThread curThread : activeThreads) {
-									if (curThread.getState() == State.TERMINATED) {
-										retValue.put(
-												curThread.getSwitch().getId()
-														.toString(),
-												(curThread.getRoleReply() == null ? "Error communicating with switch. Role not changed."
-														: curThread
-																.getRoleReply()
-																.getRole()
-																.toString()
-																.replaceFirst(
-																		STR_ROLE_PREFIX,
-																		"")));
-										pendingRemovalThreads.add(curThread);
-									}
-								}
+		if (controllerId == null || role == null) {//解析错误
 
-								// remove the threads that have completed the
-								// queries to the switches
-								for (SetConcurrentRoleThread curThread : pendingRemovalThreads) {
-									activeThreads.remove(curThread);
-								}
-								// clear the list so we don't try to double
-								// remove them
-								pendingRemovalThreads.clear();
+			retValue.put("error", "can not parse json" + json);
+		}
 
-								// if we are done finish early so we don't
-								// always get the worst case
-								if (activeThreads.isEmpty()) {
-									break;
-								}
+		for (String dpid : masterMap.keySet()) {
+			if (switchId.equals(dpid)) {
+				isSwitchId = true;
+				break;
+			}
+		}
 
-								// sleep for 1 s here
-								try {
-									Thread.sleep(1000);
-								} catch (InterruptedException e) {
-									log.error(
-											"Interrupted while waiting for role replies",
-											e);
-									retValue.put("ERROR",
-											"Thread sleep interrupted while waiting for role replies.");
-								}
+		for (ControllerModel controller : ControllerMappingRole.keySet()) {
+			if (controller.getControllerId().equals(controllerId)) {
+				isControllerId = true;
+				break;
+			}
+		}
 
-							}
-						}
-					} else {
-						/* Must be a specific switch DPID then. */
-						try {
-							DatapathId dpid = DatapathId.of(switchId);
-							IOFSwitch sw = switchService.getSwitch(dpid);
-							if (sw == null) {
-								retValue.put("ERROR",
-										"Switch Manager could not locate switch DPID "
-												+ dpid.toString());
-							} else {
-								OFRoleReply reply = setSwitchRole(sw,
-										parseRole(role));
-								retValue.put(
-										sw.getId().toString(),
-										(reply == null ? "Error communicating with switch. Role not changed."
-												: reply.getRole()
-														.toString()
-														.replaceFirst(
-																STR_ROLE_PREFIX,
-																"")));
-							}
-						} catch (Exception e) {
-							retValue.put("ERROR",
-									"Could not parse switch DPID " + switchId);
-						}
+		if (isControllerId && isSwitchId) {
+			DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
+			IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
+			OFControllerRole controllerRole = parseRole(role);// 解析role
+			String masterControllerId = masterMap.get(switchId);
+			boolean isContollerMasterSwitch = masterControllerId .equals(
+					localId);// 判断本地控制器是否是该交换机master
+			if (controllerId.equals(localId)) {// 判断请求id是否位本地id
+
+				switch (controllerRole) {
+
+				default:
+					
+					retValue.put("error", "not support role");
+					return retValue;
+
+				case ROLE_MASTER:// 如果请求role为master
+					if(isContollerMasterSwitch){//如果请求控制器是交换机的master
+						retValue.put("sorry","the controller already have been the master of switch");
+						return retValue;
+					}	else{//如果请求控制器原来是交换机的slave
+						sw.writeRequest(sw.getOFFactory()
+								// 让自己成为master
+								.buildRoleRequest().setGenerationId(U64.ZERO)
+								.setRole(controllerRole).build());
+						
+						//让原来的master成为slave
+						
+					}
+					break;
+
+				case ROLE_SLAVE:// 如果请求role为slave
+
+					if (isControllerMasterSwitch) {// 如果请求控制器是交换机的master
+
+						// 得到需要成为master且和switch相连的controller并发送过去
+						sw.writeRequest(sw.getOFFactory()
+								// 让自己成为slave
+								.buildRoleRequest().setGenerationId(U64.ZERO)
+								.setRole(controllerRole).build());
+
+					} else {// 如果请求控制器是交换机的slave，则不用做任何变化
+						retValue.put(controllerId, role);
+						return retValue;
+					}
+					break;
+
+				}
+
+			} else {// 如果请求的控制器ID不是本地ID
+
+				switch (controllerRole) {
+				case ROLE_SLAVE://请求角色为slave
+					if(isContollerMasterSwitch){//如果该控制器是该交换机的master
+					hazelcastService.publishRoleMessage(new RoleMessage(),controllerId);//让远端的改为slave
+					}
+					break;
+
+				case ROLE_MASTER://请求角色为master
+					if(isContollerMasterSwitch){//如果该控制器是该交换机的master
+					
+					}else{
+						
 					}
 					break;
 				default:
-					retValue.put("ERROR", "Unrecognized JSON key.");
-					break;
+					retValue.put("error", "not support role");
+					return retValue;
+
 				}
+
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			retValue.put("ERROR",
-					"Caught IOException while parsing JSON POST request in role request.");
+
+		} else {
+			retValue.put("error", "controllerIp  or switchId is not right");
 		}
+
+		retValue.put(controllerId, role);
+
 		return retValue;
+
+		/*
+		 * try { try { jp = f.createJsonParser(json); } catch (IOException e) {
+		 * e.printStackTrace(); }
+		 * 
+		 * jp.nextToken(); if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+		 * throw new IOException("Expected START_OBJECT"); }
+		 * 
+		 * while (jp.nextToken() != JsonToken.END_OBJECT) { if
+		 * (jp.getCurrentToken() != JsonToken.FIELD_NAME) { throw new
+		 * IOException("Expected FIELD_NAME"); }
+		 * 
+		 * String n = jp.getCurrentName().toLowerCase(); jp.nextToken();
+		 * 
+		 * switch (n) { case CoreWebRoutable.STR_ROLE: role = jp.getText();
+		 * 
+		 * if (switchId.equalsIgnoreCase(CoreWebRoutable.STR_ALL)) { for
+		 * (IOFSwitch sw : switchService.getAllSwitchMap() .values()) {
+		 * List<SetConcurrentRoleThread> activeThreads = new
+		 * ArrayList<SetConcurrentRoleThread>(
+		 * switchService.getAllSwitchMap().size());
+		 * List<SetConcurrentRoleThread> pendingRemovalThreads = new
+		 * ArrayList<SetConcurrentRoleThread>(); SetConcurrentRoleThread t; t =
+		 * new SetConcurrentRoleThread(sw, parseRole(role));
+		 * activeThreads.add(t); t.start();
+		 * 
+		 * // Join all the threads after the timeout. Set a // hard timeout //
+		 * of 12 seconds for the threads to finish. If the // thread has not //
+		 * finished the switch has not replied yet and // therefore we won't //
+		 * add the switch's stats to the reply. for (int iSleepCycles = 0;
+		 * iSleepCycles < 12; iSleepCycles++) { for (SetConcurrentRoleThread
+		 * curThread : activeThreads) { if (curThread.getState() ==
+		 * State.TERMINATED) { retValue.put( curThread.getSwitch().getId()
+		 * .toString(), (curThread.getRoleReply() == null ?
+		 * "Error communicating with switch. Role not changed." : curThread
+		 * .getRoleReply() .getRole() .toString() .replaceFirst(
+		 * STR_ROLE_PREFIX, ""))); pendingRemovalThreads.add(curThread); } }
+		 * 
+		 * // remove the threads that have completed the // queries to the
+		 * switches for (SetConcurrentRoleThread curThread :
+		 * pendingRemovalThreads) { activeThreads.remove(curThread); } // clear
+		 * the list so we don't try to double // remove them
+		 * pendingRemovalThreads.clear();
+		 * 
+		 * // if we are done finish early so we don't // always get the worst
+		 * case if (activeThreads.isEmpty()) { break; }
+		 * 
+		 * // sleep for 1 s here try { Thread.sleep(1000); } catch
+		 * (InterruptedException e) { log.error(
+		 * "Interrupted while waiting for role replies", e);
+		 * retValue.put("ERROR",
+		 * "Thread sleep interrupted while waiting for role replies."); }
+		 * 
+		 * } } } else { Must be a specific switch DPID then. try { DatapathId
+		 * dpid = DatapathId.of(switchId); IOFSwitch sw =
+		 * switchService.getSwitch(dpid); if (sw == null) {
+		 * retValue.put("ERROR", "Switch Manager could not locate switch DPID "
+		 * + dpid.toString()); } else { OFRoleReply reply = setSwitchRole(sw,
+		 * parseRole(role)); retValue.put( sw.getId().toString(), (reply == null
+		 * ? "Error communicating with switch. Role not changed." :
+		 * reply.getRole() .toString() .replaceFirst( STR_ROLE_PREFIX, ""))); }
+		 * } catch (Exception e) { retValue.put("ERROR",
+		 * "Could not parse switch DPID " + switchId); } } break; default:
+		 * retValue.put("ERROR", "Unrecognized JSON key."); break; } } } catch
+		 * (IOException e) { e.printStackTrace(); retValue.put("ERROR",
+		 * "Caught IOException while parsing JSON POST request in role request."
+		 * ); }
+		 */
+
 	}
 
 	protected class SetConcurrentRoleThread extends Thread {

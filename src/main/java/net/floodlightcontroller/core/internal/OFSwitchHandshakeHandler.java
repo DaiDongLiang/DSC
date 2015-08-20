@@ -78,6 +78,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.hazelcast.cluster.ClusterService;
 
 /**
  * Switch handler deals with the switch connection and dispatches
@@ -1291,7 +1292,8 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			//cluster
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
-			
+			System.out.println("==="+getDpid().toString());
+			System.out.println(clusterService.getControllerMappingSwitch().values());
 			
 			initialRole = OFControllerRole.ROLE_MASTER;
 			if (OFSwitchManager.clearTablesOnEachTransitionToMaster) {
