@@ -20,6 +20,7 @@ package net.floodlightcontroller.core.web;
 import net.floodlightcontroller.core.module.ModuleLoaderResource;
 import net.floodlightcontroller.restserver.RestletRoutable;
 
+import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
@@ -44,7 +45,6 @@ public class CoreWebRoutable implements RestletRoutable {
     public String basePath() {
         return "/wm/core";
     }
-
     @Override
     public Restlet getRestlet(Context context) {
         Router router = new Router(context);
@@ -53,7 +53,7 @@ public class CoreWebRoutable implements RestletRoutable {
         router.attach("/switch/{" + STR_SWITCH_ID + "}/role/json", SwitchRoleResource.class);
         router.attach("/switch/all/{" + STR_STAT_TYPE + "}/json", AllSwitchStatisticsResource.class);
         router.attach("/switch/{" + STR_SWITCH_ID + "}/{" + STR_STAT_TYPE + "}/json", SwitchStatisticsResource.class);
-        router.attach("/controller/switches/json", ControllerSwitchesResource.class);
+
         router.attach("/counter/{" + STR_CTR_MODULE + "}/{" + STR_CTR_TITLE + "}/json", CounterResource.class);
         router.attach("/memory/json", ControllerMemoryResource.class);
         router.attach("/packettrace/json", PacketTraceResource.class);
@@ -64,4 +64,5 @@ public class CoreWebRoutable implements RestletRoutable {
         router.attach("/system/uptime/json", SystemUptimeResource.class);
         return router;
     }
+    
 }

@@ -16,7 +16,7 @@
 
 package net.floodlightcontroller.staticflowentry.web;
 
-import net.floodlightcontroller.core.web.ControllerSwitchesResource;
+import net.dsc.cluster.web.ControllerSwitchesResource;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 
 import org.projectfloodlight.openflow.types.DatapathId;

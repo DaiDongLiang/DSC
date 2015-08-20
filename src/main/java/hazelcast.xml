@@ -187,10 +187,49 @@
         <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
 
     </map>
-    
-    <list name="controllers">
+        <map name="switchs">
+        <in-memory-format>OBJECT</in-memory-format>
+
         <backup-count>2</backup-count>
-    </list>
+
+
+        <time-to-live-seconds>0</time-to-live-seconds>
+
+        <max-idle-seconds>0</max-idle-seconds>
+
+        <eviction-policy>NONE</eviction-policy>
+
+        <max-size policy="PER_NODE">0</max-size>
+
+        <eviction-percentage>25</eviction-percentage>
+
+        <min-eviction-check-millis>100</min-eviction-check-millis>
+
+        <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
+
+    </map>
+    
+    <map name="controllers">
+        <in-memory-format>OBJECT</in-memory-format>
+
+        <backup-count>2</backup-count>
+
+
+        <time-to-live-seconds>0</time-to-live-seconds>
+
+        <max-idle-seconds>0</max-idle-seconds>
+
+        <eviction-policy>NONE</eviction-policy>
+
+        <max-size policy="PER_NODE">0</max-size>
+
+        <eviction-percentage>25</eviction-percentage>
+
+        <min-eviction-check-millis>100</min-eviction-check-millis>
+
+        <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
+
+    </map>
     
     <multimap name="controller_switch">
         <backup-count>2</backup-count>

@@ -15,7 +15,7 @@
 *    under the License.
 **/
 
-package net.floodlightcontroller.core.web;
+package net.dsc.cluster.web;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -57,9 +57,6 @@ public class ControllerSwitchesResource extends ServerResource {
         public long getConnectedSince() {
             return connectedSince;
         }
-
-
-
     }
 
     @Get("json")

@@ -11,14 +11,12 @@ public class ClusterWebRoutable implements RestletRoutable{
 	@Override
 	public Restlet getRestlet(Context context) {
 		Router router = new Router(context);
-		
-		
+        router.attach("/controller/switches/json", ControllerSwitchesResource.class);
 		return router;
 	}
 
 	@Override
 	public String basePath() {
-		// TODO Auto-generated method stub
 		return "/cluster";
 	}
 

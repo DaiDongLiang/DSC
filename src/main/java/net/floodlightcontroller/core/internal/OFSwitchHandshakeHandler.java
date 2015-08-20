@@ -1265,7 +1265,6 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState(){
 			//cluster
-
 			sendRoleRequest(roleManager.getOFControllerRole(getDpid()));
 		}
 	}
@@ -1289,6 +1288,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.MASTER);
 			
 			//cluster
+			clusterService.putSwitch(getDpid().toString(),OFControllerRole.ROLE_MASTER.toString(),sw.getInetAddress().toString());
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 			clusterService.ControllerLoadIncrease(roleManager.getController().getControllerModel().getControllerId(), 1);
@@ -1431,9 +1431,11 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.SLAVE);
 			
 			//cluster
+			clusterService.putSwitch(getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString(),sw.getInetAddress().toString());
 			clusterService.removeMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);		
+			
 			if (initialRole == null) {
 				initialRole = OFControllerRole.ROLE_SLAVE;
 			}
@@ -1839,10 +1841,12 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 	public void connectionClosed(IOFConnectionBackend connection) {
 		
 		//culster
-		clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),initialRole.toString());
+		clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString());
 		clusterService.removeMasterMap(getDpid().toString());
-		clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
-		
+		if(initialRole!=OFControllerRole.ROLE_SLAVE){
+			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
+		}
+		clusterService.removeSwitch(getDpid().toString());
 		// Disconnect handler's remaining connections
 		cleanup();
 

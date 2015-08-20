@@ -19,7 +19,7 @@ package net.floodlightcontroller.staticflowentry.web;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.floodlightcontroller.core.web.ControllerSwitchesResource;
+import net.dsc.cluster.web.ControllerSwitchesResource;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 
 import org.projectfloodlight.openflow.protocol.OFFlowMod;

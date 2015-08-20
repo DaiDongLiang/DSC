@@ -36,7 +36,7 @@ public class SwitchStatisticsResource extends SwitchResourceBase {
 
 	@Get("json")
 	public StatsReply retrieve(){
-
+		
 		StatsReply result = new StatsReply();
 		Object values = null; // set for error detection in serializer
 		String switchIdStr = (String) getRequestAttributes().get(CoreWebRoutable.STR_SWITCH_ID);

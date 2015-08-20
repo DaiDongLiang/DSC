@@ -1,6 +1,7 @@
 package net.dsc.cluster;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class SwitchConnectModel implements Serializable {
 
@@ -10,12 +11,16 @@ public class SwitchConnectModel implements Serializable {
 	private String controllerId;
 	private String dpid;
 	private String role;
-
-	public SwitchConnectModel(String controllerId, String dpid, String role) {
+	private Date connectedSince;
+	private String switchIP;
+	
+	public SwitchConnectModel(String controllerId, String dpid, String role,Date connectedSince,String swtichIP) {
 		super();
 		this.controllerId = controllerId;
 		this.dpid = dpid;
 		this.role = role;
+		this.setConnectedSince(connectedSince);
+		this.setSwitchIP(swtichIP);
 	}
 
 	public String getControllerId() {
@@ -60,5 +65,21 @@ public class SwitchConnectModel implements Serializable {
 	@Override
 	public int hashCode() {
 		return controllerId.hashCode()+dpid.hashCode()+role.hashCode();
+	}
+
+	public Date getConnectedSince() {
+		return connectedSince;
+	}
+
+	public void setConnectedSince(Date connectedSince) {
+		this.connectedSince = connectedSince;
+	}
+
+	public String getSwitchIP() {
+		return switchIP;
+	}
+
+	public void setSwitchIP(String switchIP) {
+		this.switchIP = switchIP;
 	}
 }
