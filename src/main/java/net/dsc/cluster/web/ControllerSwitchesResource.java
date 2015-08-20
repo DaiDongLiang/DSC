@@ -20,13 +20,17 @@ package net.dsc.cluster.web;
 import java.util.Set;
 import java.util.HashSet;
 
+import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.SwitchConnectModel;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.IOFSwitch;
 
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
+
 import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -61,13 +65,13 @@ public class ControllerSwitchesResource extends ServerResource {
 
     @Get("json")
     public Set<DatapathIDJsonSerializerWrapper> retrieve(){
-        IOFSwitchService switchService = 
-            (IOFSwitchService) getContext().getAttributes().
-                get(IOFSwitchService.class.getCanonicalName());
+        IClusterService clusterService = 
+                (IClusterService) getContext().getAttributes().
+                    get(IClusterService.class.getCanonicalName());
+        
         Set<DatapathIDJsonSerializerWrapper> dpidSets = new HashSet<DatapathIDJsonSerializerWrapper>();
-        for(IOFSwitch sw: switchService.getAllSwitchMap().values()) {
-            dpidSets.add(new DatapathIDJsonSerializerWrapper(sw.getId(), sw.getInetAddress().toString(),  sw.getConnectedSince().getTime()));
-
+        for(SwitchConnectModel s:clusterService.getSwithcs().values()){
+            dpidSets.add(new DatapathIDJsonSerializerWrapper(DatapathId.of(s.getDpid()),s.getSwitchIP(),s.getConnectedSince().getTime()));	
         }
         return dpidSets;
     }

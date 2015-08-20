@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.dsc.cluster.web.ClusterWebRoutable;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.listener.ControllerMembershipListener;
 import net.floodlightcontroller.core.IFloodlightProviderService;
@@ -26,6 +27,8 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.linkdiscovery.web.LinkDiscoveryWebRoutable;
+import net.floodlightcontroller.restserver.IRestApiService;
 
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
 import org.projectfloodlight.openflow.types.DatapathId;
@@ -47,6 +50,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	protected IFloodlightProviderService floodlightProvider;
 	protected IOFSwitchService switchService;
 	protected IHazelcastService hazelcast;
+	protected IRestApiService restApiService;
 
 	private IMap<String, ControllerModel> controllers;
 	private IMap<String, SwitchConnectModel> switchs;
@@ -216,6 +220,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		l.add(IFloodlightProviderService.class);
 		l.add(IHazelcastService.class);
 		l.add(IOFSwitchService.class);
+		l.add(IRestApiService.class);
 		return l;
 	}
 
@@ -227,6 +232,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
 		switchService = context.getServiceImpl(IOFSwitchService.class);
+		restApiService=context.getServiceImpl(IRestApiService.class);
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast
 				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
@@ -239,6 +245,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		hazelcast.addMemberListener(new ControllerMembershipListener(this));
+		if (restApiService != null)
+			restApiService.addRestletRoutable(new ClusterWebRoutable());
 	}
 
 	// IControllerListener implements
