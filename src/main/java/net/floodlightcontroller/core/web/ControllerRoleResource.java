@@ -39,7 +39,7 @@ public class ControllerRoleResource extends ServerResource {
 
     protected static Logger log = LoggerFactory.getLogger(ControllerRoleResource.class);
     
-    private static final String STR_ACTIVE = "ACTIVE";
+    private static final String STR_ACTIVE = "ACTIVE"; 
     private static final String STR_STANDBY = "STANDBY";
     private static final String STR_ROLE = "role";
     private static final String STR_ROLE_CHANGE_DESC = "role-change-description";

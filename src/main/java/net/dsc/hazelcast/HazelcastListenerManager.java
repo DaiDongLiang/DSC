@@ -1,8 +1,10 @@
 package net.dsc.hazelcast;
 
 
+import net.dsc.hazelcast.listener.ChangeRoleListener;
 import net.dsc.hazelcast.listener.FlowMessageListener;
 import net.dsc.hazelcast.message.FlowMessage;
+import net.dsc.hazelcast.message.RoleMessage;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
@@ -19,5 +21,10 @@ public class HazelcastListenerManager {
 	public static void addFlowMessageListener(String TopicName){//添加流表事件监听
 		ITopic<FlowMessage> topic = client.getTopic(TopicName);
 		topic.addMessageListener(new FlowMessageListener());
+	}
+	
+	public static void addListenRoleChange(String TopicName){
+		ITopic<RoleMessage> topic = client.getTopic(TopicName);
+		topic.addMessageListener(new  ChangeRoleListener());
 	}
 }
