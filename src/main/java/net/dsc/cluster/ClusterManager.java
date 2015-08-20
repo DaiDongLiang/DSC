@@ -92,7 +92,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 							int value1 = 0, value2 = 0;
 							value1 = entry1.getValue();
 							value2 = entry2.getValue();
-							return value2 - value1;
+							return value1 - value2;
 						}
 					});
 			for (Iterator<Map.Entry<String, Integer>> i = entryList.iterator(); i
