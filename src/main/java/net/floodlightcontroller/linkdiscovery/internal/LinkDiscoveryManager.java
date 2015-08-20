@@ -571,7 +571,6 @@ IFloodlightModule, IInfoProvider {
 
 	protected Command handlePacketIn(DatapathId sw, OFPacketIn pi,
 			FloodlightContext cntx) {
-		System.out.println("packet-in消息");
 		Ethernet eth = IFloodlightProviderService.bcStore.get(cntx,
 				IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
 		OFPort inPort = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
@@ -633,7 +632,6 @@ IFloodlightModule, IInfoProvider {
 
 	private Command handleLldp(LLDP lldp, DatapathId sw, OFPort inPort,
 			boolean isStandard, FloodlightContext cntx) {
-		System.out.println("开始处理链路消息");
 		// If LLDP is suppressed on this port, ignore received packet as well
 		IOFSwitch iofSwitch = switchService.getSwitch(sw);
 
@@ -664,7 +662,6 @@ IFloodlightModule, IInfoProvider {
 					&& lldptlv.getValue()[3] == 0x0) {
 				ByteBuffer dpidBB = ByteBuffer.wrap(lldptlv.getValue());
 
-				System.out.println("dpid"+DatapathId.of(dpidBB.getLong(4)).toString());
 				remoteDpid=DatapathId.of(dpidBB.getLong(4));
 
 			} else if (lldptlv.getType() == 12 && lldptlv.getLength() == 8) {
@@ -739,7 +736,6 @@ IFloodlightModule, IInfoProvider {
 			}
 			return Command.STOP;
 		}
-		System.out.println("验证TLV成功");
 		// Store the time of update to this link, and push it out to
 		// routingEngine
 		Link lt = new Link(remoteDpid, remotePort,

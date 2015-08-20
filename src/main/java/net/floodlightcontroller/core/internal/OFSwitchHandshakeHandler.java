@@ -3,6 +3,7 @@ package net.floodlightcontroller.core.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.jboss.netty.util.Timer;
 
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.SwitchModel;
 import net.floodlightcontroller.core.IOFConnection;
 import net.floodlightcontroller.core.IOFConnectionBackend;
 import net.floodlightcontroller.core.IOFSwitch;
@@ -1289,7 +1291,12 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.MASTER);
 			
 			//cluster
-			clusterService.putSwitch(getDpid().toString(),OFControllerRole.ROLE_MASTER.toString(),sw.getInetAddress().toString());
+			clusterService.putSwitch(new SwitchModel.Builder()
+																				.dpid(getDpid()
+																				.toString())
+																				.date(new Date())
+																				.ip(sw.getInetAddress().toString())
+																				.version(featuresReply.getVersion().toString()).build());
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 			clusterService.ControllerLoadIncrease(roleManager.getController().getControllerModel().getControllerId(), 1);
@@ -1432,7 +1439,12 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.SLAVE);
 			
 			//cluster
-			clusterService.putSwitch(getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString(),sw.getInetAddress().toString());
+			clusterService.putSwitch(new SwitchModel.Builder()
+			.dpid(getDpid()
+			.toString())
+			.date(new Date())
+			.ip(sw.getInetAddress().toString())
+			.version(featuresReply.getVersion().toString()).build());
 			clusterService.removeMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);		
@@ -1844,6 +1856,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		//culster
 		clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString());
 		clusterService.removeMasterMap(getDpid().toString());
+		
 		if(initialRole!=OFControllerRole.ROLE_SLAVE){
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
 		}

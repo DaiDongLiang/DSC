@@ -19,7 +19,7 @@ package net.floodlightcontroller.staticflowentry.web;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.dsc.cluster.web.ControllerSwitchesResource;
+import net.dsc.cluster.web.SwitchesResource;
 import net.floodlightcontroller.staticflowentry.IStaticFlowEntryPusherService;
 
 import org.projectfloodlight.openflow.protocol.OFFlowMod;
@@ -52,7 +52,7 @@ public class ListStaticFlowEntriesResource extends ServerResource {
                 return new OFFlowModMap(retMap);
                 
             } catch (NumberFormatException e){
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, ControllerSwitchesResource.DPID_ERROR);
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, SwitchesResource.DPID_ERROR);
             }
         }
         return null;
