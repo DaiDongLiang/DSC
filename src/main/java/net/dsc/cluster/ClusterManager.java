@@ -246,26 +246,22 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void controllerRemoved(MembershipEvent event) {	
 		Member m = event.getMember();
 		log.info("{} disconnected",m.getUuid());
-		controllerLoad.remove(m.getUuid());
-		List<String>  load= getSortedControllerLoad();
-		String uuid=floodlightProvider.getControllerModel().getControllerId();
-		ControllerModel c = controllers.get(m.getUuid());
-		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);
-		for (SwitchConnectModel s : switchs) {
-			if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) {
-				for(String cId:load){
-					if(cId.equals(uuid)&&controllerMappingSwitch.get(controllers.get(cId)).contains(s)){
-						DatapathId dpid = DatapathId.of(s.getDpid());
-						removeMasterMap(dpid.toString());
-						IOFSwitch sw = switchService.getSwitch(dpid);
-						log.info("change master {}<-->{}",uuid,dpid);
-						sw.writeRequest(sw.getOFFactory()
-								.buildRoleRequest()
-								.setGenerationId(U64.ZERO)
-								.setRole(OFControllerRole.ROLE_MASTER).
-								build());
-					}
-				}
+		controllerLoad.remove(m.getUuid());//移除故障控制器负载
+		List<String>  load= getSortedControllerLoad();//取得控制器负载排序
+		String uuid=floodlightProvider.getControllerModel().getControllerId();//得到本机uuid
+		ControllerModel c = controllers.get(m.getUuid());//得到故障控制器模型
+		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);//得到故障控制器控制的交换机
+		for (SwitchConnectModel s : switchs) {//遍历交换机
+			if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) &&uuid.equals(load.get(0))) {//如果交换机角色MASTER并且负载最小的是自己。
+				DatapathId dpid = DatapathId.of(s.getDpid());
+				removeMasterMap(dpid.toString());
+				IOFSwitch sw = switchService.getSwitch(dpid);
+				log.info("change master {}<-->{}",uuid,dpid);
+				sw.writeRequest(sw.getOFFactory()
+						.buildRoleRequest()
+						.setGenerationId(U64.ZERO)
+						.setRole(OFControllerRole.ROLE_MASTER).
+						build());
 			}	
 		}
 		controllerMappingSwitch.remove(c);
