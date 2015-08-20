@@ -174,11 +174,13 @@ public class SwitchRoleResource extends ServerResource {
 		IHazelcastService hazelcastService = (IHazelcastService) getContext().// 获取hazelcast服务
 				getAttributes().get(IHazelcastService.class.getCanonicalName());
 
-		IOFSwitchService switchService = (IOFSwitchService) getContext()
+		IOFSwitchService switchService = (IOFSwitchService) getContext() //获取switch服务
 				.getAttributes().get(IOFSwitchService.class.getCanonicalName());
 
 		MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole = clusterService
 				.getControllerMappingSwitch();
+		
+		IMap<String,ControllerModel> controllers = clusterService.getControllers();
 
 		IMap<String, String> masterMap = clusterService.getMasterMap();
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
@@ -188,7 +190,7 @@ public class SwitchRoleResource extends ServerResource {
 
 		String switchId = (String) getRequestAttributes().get(
 				CoreWebRoutable.STR_SWITCH_ID);
-
+		List<String> sortList = clusterService.getSortedControllerLoad();
 		boolean isControllerId = false;
 		boolean isSwitchId = false;
 		MappingJsonFactory f = new MappingJsonFactory();
@@ -226,14 +228,14 @@ public class SwitchRoleResource extends ServerResource {
 			retValue.put("error", "can not parse json" + json);
 		}
 
-		for (String dpid : masterMap.keySet()) {
+		for (String dpid : masterMap.keySet()) {//判断switchId是否为存在的switchId
 			if (switchId.equals(dpid)) {
 				isSwitchId = true;
 				break;
 			}
 		}
 
-		for (ControllerModel controller : ControllerMappingRole.keySet()) {
+		for (ControllerModel controller : ControllerMappingRole.keySet()) {//判断controllerId是否存在
 			if (controller.getControllerId().equals(controllerId)) {
 				isControllerId = true;
 				break;
@@ -247,7 +249,7 @@ public class SwitchRoleResource extends ServerResource {
 			String masterControllerId = masterMap.get(switchId);
 			boolean isContollerMasterSwitch = masterControllerId .equals(
 					localId);// 判断本地控制器是否是该交换机master
-			if (controllerId.equals(localId)) {// 判断请求id是否位本地id
+			if (controllerId.equals(localId)) {// 判断请求id是否为本地id
 
 				switch (controllerRole) {
 
@@ -255,27 +257,34 @@ public class SwitchRoleResource extends ServerResource {
 					
 					retValue.put("error", "not support role");
 					return retValue;
+					
 
 				case ROLE_MASTER:// 如果请求role为master
 					if(isContollerMasterSwitch){//如果请求控制器是交换机的master
 						retValue.put("sorry","the controller already have been the master of switch");
 						return retValue;
 					}	else{//如果请求控制器原来是交换机的slave
+						// 让自己成为master
 						sw.writeRequest(sw.getOFFactory()
-								// 让自己成为master
+								
 								.buildRoleRequest().setGenerationId(U64.ZERO)
 								.setRole(controllerRole).build());
-						
+						hazelcastService.publishRoleMessage(new RoleMessage("SLAVE",switchId), controllerId);
 						//让原来的master成为slave
+						retValue.put("success","请求已发送");
+						return retValue;
 						
 					}
-					break;
+					
+					
 
 				case ROLE_SLAVE:// 如果请求role为slave
 
 					if (isControllerMasterSwitch) {// 如果请求控制器是交换机的master
-
-						// 得到需要成为master且和switch相连的controller并发送过去
+					
+						
+						selectMaster(sortList, ControllerMappingRole, controllers, switchId, hazelcastService);//重新选主
+						
 						sw.writeRequest(sw.getOFFactory()
 								// 让自己成为slave
 								.buildRoleRequest().setGenerationId(U64.ZERO)
@@ -290,18 +299,41 @@ public class SwitchRoleResource extends ServerResource {
 				}
 
 			} else {// 如果请求的控制器ID不是本地ID
-
+				boolean requestControllerisMaster = masterMap.get(switchId).equals(controllerId);//判断请求的控制器是否是请求交换机的master
 				switch (controllerRole) {
 				case ROLE_SLAVE://请求角色为slave
-					if(isContollerMasterSwitch){//如果该控制器是该交换机的master
-					hazelcastService.publishRoleMessage(new RoleMessage(),controllerId);//让远端的改为slave
-					}
-					break;
+					
+						if(requestControllerisMaster){//判断远端控制器是否是请求交换机的master
+							
+							selectMaster(sortList, ControllerMappingRole, controllers, switchId, hazelcastService);//重新选主
+							
+						}
+						hazelcastService.publishRoleMessage(new RoleMessage("SLAVE",switchId),controllerId);//让请求控制器变为slave
+						
+						
+					
+					retValue.put("ok","请求已发送" );
+					return retValue;
+					
 
 				case ROLE_MASTER://请求角色为master
-					if(isContollerMasterSwitch){//如果该控制器是该交换机的master
-					
+					hazelcastService.publishRoleMessage(new RoleMessage("MASTER",switchId),controllerId);//让请求控制器变为master
+					if(isContollerMasterSwitch){//如果本地控制器是该交换机的master
+						
+						sw.writeRequest(sw.getOFFactory()	// 让自己成为slave
+							
+								.buildRoleRequest().setGenerationId(U64.ZERO)
+								.setRole(parseRole("SLAVE")).build());
 					}else{
+						
+						if(requestControllerisMaster){//如果请求控制器是请求交换机master
+							retValue.put("sorry","the controller already have been the master of switch");
+							return retValue;
+						}else{
+							
+							retValue.put("ok","请求已发送");
+							return retValue;
+						}
 						
 					}
 					break;
@@ -391,6 +423,18 @@ public class SwitchRoleResource extends ServerResource {
 
 	}
 
+	private void selectMaster(List<String> sortList,MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole,IMap<String,ControllerModel> controllers,String switchId,IHazelcastService hazelcastService){
+		for(String availableControllerId:sortList){
+			Collection<SwitchConnectModel> switches = ControllerMappingRole.get(controllers.get(availableControllerId));
+			Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch
+			while(it.hasNext()){
+				SwitchConnectModel singleSwitch = it.next();
+				if(singleSwitch.getDpid().equals(switchId)){
+					hazelcastService.publishRoleMessage(new RoleMessage("MASTER",switchId), availableControllerId);//发master消息给合适的用户
+				}
+			}
+		}
+	}
 	protected class SetConcurrentRoleThread extends Thread {
 		private OFRoleReply switchReply;
 		private OFControllerRole role;
