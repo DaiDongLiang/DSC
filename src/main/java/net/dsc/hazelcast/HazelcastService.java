@@ -45,7 +45,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 
 	private HazelcastInstance hazelcastInstance = null;
 	private HazelcastInstance client = null;
-	private IOFSwitchService switchService;
+	private static IOFSwitchService switchService = null;
 
 	@Override
 	public <K, V> IMap<K,V> getMap(String MapName) {
@@ -109,7 +109,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
 		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
-		HazelcastListenerManager.addListenRoleChange(getLocalMember().getUuid());
+		HazelcastListenerManager.addListenRoleChange(getLocalMember().getUuid(),this);
 	}
 	
 	@Override
@@ -141,8 +141,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 		RoleMessage roleMessage = message.getMessageObject();
 		String switchId = roleMessage.SwitchId;
 		DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
-		System.out.println(switchId);
-		System.out.println(switchService);
+
 		IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
 		OFControllerRole controllerRole = parseRole(roleMessage.Role);
 		sw.writeRequest(sw.getOFFactory()

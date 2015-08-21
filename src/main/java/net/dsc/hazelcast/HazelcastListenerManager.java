@@ -9,6 +9,7 @@ import net.dsc.hazelcast.message.RoleMessage;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MembershipListener;
+import com.hazelcast.core.MessageListener;
 //监听器管理
 public class HazelcastListenerManager {
 	private static HazelcastInstance instance = HazelcastManager.getHazelcastInstance();
@@ -23,8 +24,8 @@ public class HazelcastListenerManager {
 		topic.addMessageListener(new FlowMessageListener());
 	}
 	
-	public static void addListenRoleChange(String TopicName){
+	public static void addListenRoleChange(String TopicName,MessageListener<RoleMessage> listener){
 		ITopic<RoleMessage> topic = client.getTopic(TopicName);
-		topic.addMessageListener(new  HazelcastService());
+		topic.addMessageListener(listener);
 	}
 }
