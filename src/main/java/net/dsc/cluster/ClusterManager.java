@@ -252,6 +252,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		List<String>  load= getSortedControllerLoad();//取得控制器负载排序
 		String uuid=floodlightProvider.getControllerModel().getControllerId();//得到本机uuid
 		ControllerModel c = controllers.get(m.getUuid());//得到故障控制器模型
+		System.out.println(c);
+		System.out.println(controllerMappingSwitch);
 		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);//得到故障控制器控制的交换机
 		for (SwitchConnectModel s : switchs) {//遍历交换机
 			if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) &&uuid.equals(load.get(0))) {//如果交换机角色MASTER并且负载最小的是自己。

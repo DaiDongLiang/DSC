@@ -3,5 +3,6 @@
 /SyncClient.launch
 /src/test
 /target
+/src/main/java/hazelcast.xml
 /src/main/java/hazelcast-client.xml
 

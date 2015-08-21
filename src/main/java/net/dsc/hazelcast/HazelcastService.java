@@ -141,6 +141,8 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 		RoleMessage roleMessage = message.getMessageObject();
 		String switchId = roleMessage.SwitchId;
 		DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
+		System.out.println(switchId);
+		System.out.println(switchService);
 		IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
 		OFControllerRole controllerRole = parseRole(roleMessage.Role);
 		sw.writeRequest(sw.getOFFactory()
