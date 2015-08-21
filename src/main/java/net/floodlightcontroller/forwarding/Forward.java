@@ -38,6 +38,8 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 	public static int FLOWMOD_DEFAULT_HARD_TIMEOUT = 0; // infinite
 	public static int FLOWMOD_DEFAULT_PRIORITY = 1; // 0 is the default table-miss flow in OF1.3+, so we need to use 1
 	private Map<String, Map<String,Integer>> macPort;
+	
+	protected IFloodlightProviderService floodlightProvider;
 	protected IOFSwitchService switchService;
 	@Override
 	public String getName() {
@@ -53,9 +55,9 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 	public boolean isCallbackOrderingPostreq(OFType type, String name) {
 		return false;
 	}
-
+	
 	@Override
-	public net.floodlightcontroller.core.IListener.Command receive(
+	public Command receive(
 			IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
 		switch (msg.getType()) {
 		case PACKET_IN:
@@ -73,6 +75,7 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 		String dpid=sw.getId().toString();
 		initMap(dpid);
 		macPort.get(dpid).put(src, inPort.getPortNumber());//记录地址
+		System.out.println(macPort.get(dpid));
 		Integer outPort;
 		if(macPort.get(dpid).keySet().contains(dst)){
 			outPort=macPort.get(dpid).get(dst);
@@ -96,11 +99,12 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 		//发送packetout
 		OFPacketOut.Builder pob = sw.getOFFactory().buildPacketOut();
 		List<OFAction> actions = new ArrayList<OFAction>();
-		actions.add(sw.getOFFactory().actions().output(OFPort.FLOOD, Integer.MAX_VALUE)); 
+		actions.add(sw.getOFFactory().actions().output(OFPort.ALL, Integer.MAX_VALUE)); 
 		pob.setActions(actions);
 		pob.setInPort(inPort);
 		pob.setActions(actions);
 		pob.setBufferId(OFBufferId.NO_BUFFER);
+		pob.setData(pi.getData());
 		sw.write(pob.build());
 		return Command.CONTINUE;
 		
@@ -140,6 +144,7 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
 		l.add(IOFSwitchService.class);
+		l.add(IFloodlightProviderService.class);
 		return l;
 	}
 
@@ -148,12 +153,13 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 			throws FloodlightModuleException {
 		macPort=new HashMap<String, Map<String,Integer>>();
 		switchService = context.getServiceImpl(IOFSwitchService.class);
+		floodlightProvider=context.getServiceImpl(IFloodlightProviderService.class);
 	}
 
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		
+		floodlightProvider.addOFMessageListener(OFType.PACKET_IN, this);
 	}
 	
 	private Map<String, Map<String,Integer>> initMap(String dpid){
