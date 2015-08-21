@@ -36,8 +36,8 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import net.dsc.cluster.HARole;
-import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.RoleInfo;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IListener;

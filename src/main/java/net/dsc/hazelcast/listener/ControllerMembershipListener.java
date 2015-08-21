@@ -1,8 +1,6 @@
 package net.dsc.hazelcast.listener;
 
 
-import net.dsc.cluster.IControllerListener;
-
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;

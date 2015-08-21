@@ -8,8 +8,8 @@ import java.util.Date;
 
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.RoleInfo;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitchBackend;
 import net.floodlightcontroller.core.IShutdownService;

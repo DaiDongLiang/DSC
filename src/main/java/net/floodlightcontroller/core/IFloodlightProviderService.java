@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.dsc.cluster.HARole;
-import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.RoleInfo;
 import net.dsc.cluster.model.ControllerModel;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.internal.Controller.IUpdate;
 import net.floodlightcontroller.core.internal.Controller.ModuleLoaderState;
 import net.floodlightcontroller.core.internal.RoleManager;

@@ -1,10 +1,6 @@
 package net.dsc.cluster;
 
-import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_LOAD_MAP_NAME;
-import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_MAP_NAME;
-import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_SWITCH_MULITMAP_NAME;
-import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
-import static net.dsc.cluster.HazelcastTableNameConstant.SWITCHS_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,11 +13,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.LinkModel;
 import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.cluster.model.SwitchModel;
 import net.dsc.cluster.web.ClusterWebRoutable;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.listener.ControllerMembershipListener;
+import net.dsc.hazelcast.listener.IControllerListener;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
@@ -37,6 +35,7 @@ import org.projectfloodlight.openflow.types.U64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
 import com.hazelcast.core.MembershipEvent;
@@ -58,24 +57,41 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 	private IMap<String, Integer> controllerLoad;
 	private IMap<String, String> masterMap;
-	
-	public ClusterManager() { }
-	
-	//交换机集合
+	private MultiMap<String, LinkModel> switchlinks;
+	public ClusterManager() {
+	}
+	//链路集合
 	@Override
-	public void putSwitch(SwitchModel s){
+	public void addLink(String dpid, LinkModel link) {
+		switchlinks.put(dpid, link);
+		
+	}
+	@Override
+	public void deleteLink(String dpid, LinkModel link) {
+		switchlinks.remove(dpid, link);
+	}
+	@Override
+	public MultiMap<String, LinkModel> getLinks() {
+		return switchlinks;
+	}
+	
+	// 交换机集合
+	@Override
+	public void putSwitch(SwitchModel s) {
 		switchs.put(s.getDpid(), s);
 	}
+
 	@Override
 	public IMap<String, SwitchModel> getSwithcs() {
 		return switchs;
 	}
+
 	@Override
 	public void removeSwitch(String dpid) {
 		switchs.remove(dpid);
 	}
-	
-	//控制器负载
+
+	// 控制器负载
 	@Override
 	public List<String> getSortedControllerLoad() {
 		List<String> list = new ArrayList<String>();
@@ -100,7 +116,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		}
 		return list;
 	}
-	
+
 	@Override
 	public synchronized void ControllerLoadIncrease(String controllerId, int num) {
 		log.info("controller {} increase {}", controllerId, num);
@@ -129,10 +145,11 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void ControllerLoadReset(String controllerId) {
 		controllerLoad.put(controllerId, 0);
 	}
-	
-	public IMap<String , Integer> getControllerLoad(){
+
+	public IMap<String, Integer> getControllerLoad() {
 		return controllerLoad;
 	}
+
 	// 添加控制器集合
 	@Override
 	public void addController(ControllerModel c) {
@@ -144,10 +161,11 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		controllers.remove(c.getControllerId());
 
 	}
+
 	public IMap<String, ControllerModel> getControllers() {
 		return controllers;
 	}
-	
+
 	@Override
 	public void putMasterMap(String dpid) {
 		masterMap.put(dpid, floodlightProvider.getControllerModel()
@@ -163,29 +181,30 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public IMap<String, String> getMasterMap() {
 		return masterMap;
 	}
-	//控制器映射
-	
+
+	// 控制器映射
+
 	@Override
 	public boolean isConnected(String dpid, String uuid) {
-		ControllerModel c=controllers.get(uuid);
-		Collection<SwitchConnectModel> switchs=controllerMappingSwitch.get(c);
-		for(SwitchConnectModel s:switchs){
-			if(s.getDpid().equals(dpid))
+		ControllerModel c = controllers.get(uuid);
+		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);
+		for (SwitchConnectModel s : switchs) {
+			if (s.getDpid().equals(dpid))
 				return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void removeControllerMappingSwitch(ControllerModel c, String dpid) {
-
 		controllerMappingSwitch.remove(c, switchs.get(dpid));
 	}
 
 	@Override
 	public synchronized void putControllerMappingSwitch(ControllerModel c,
 			String dpid, String role) {
-		putControllerMappingSwitch(c, new SwitchConnectModel(c.getControllerId(), dpid, role));
+		putControllerMappingSwitch(c,
+				new SwitchConnectModel(c.getControllerId(), dpid, role));
 	}
 
 	private void putControllerMappingSwitch(ControllerModel c,
@@ -201,7 +220,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		}
 		controllerMappingSwitch.put(c, s);
 	}
-	
+
 	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch() {
 		return controllerMappingSwitch;
 	}
@@ -239,13 +258,14 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				.getServiceImpl(IFloodlightProviderService.class);
 		hazelcast = context.getServiceImpl(IHazelcastService.class);
 		switchService = context.getServiceImpl(IOFSwitchService.class);
-		restApiService=context.getServiceImpl(IRestApiService.class);
+		restApiService = context.getServiceImpl(IRestApiService.class);
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast
 				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
-		switchs=hazelcast.getMap(SWITCHS_MAP_NAME);
+		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
+		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
 	}
 
 	@Override
@@ -259,30 +279,31 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	// IControllerListener implements
 	@Override
-	public void controllerRemoved(MembershipEvent event) {	
+	public void controllerRemoved(MembershipEvent event) {
 		Member m = event.getMember();
-		log.info("{} disconnected",m.getUuid());
-		controllerLoad.remove(m.getUuid());//移除故障控制器负载
-		List<String>  load= getSortedControllerLoad();//取得控制器负载排序
-		String uuid=floodlightProvider.getControllerModel().getControllerId();//得到本机uuid
-		ControllerModel c = controllers.get(m.getUuid());//得到故障控制器模型
-		System.out.println(c);
-		System.out.println(controllerMappingSwitch);
-		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);//得到故障控制器控制的交换机
-		for (SwitchConnectModel s : switchs) {//遍历交换机
-			if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) &&uuid.equals(load.get(0))) {//如果交换机角色MASTER并且负载最小的是自己。
-				DatapathId dpid = DatapathId.of(s.getDpid());
-				removeMasterMap(dpid.toString());
-				IOFSwitch sw = switchService.getSwitch(dpid);
-				log.info("change master {}<-->{}",uuid,dpid);
-				sw.writeRequest(sw.getOFFactory()
-						.buildRoleRequest()
-						.setGenerationId(U64.ZERO)
-						.setRole(OFControllerRole.ROLE_MASTER).
-						build());
-			}	
+		log.info("{} disconnected", m.getUuid());
+		controllerLoad.remove(m.getUuid());// 移除故障控制器负载
+		List<String> load = ImmutableList.copyOf(getSortedControllerLoad());// 取得控制器负载排序
+		String uuid = floodlightProvider.getControllerModel().getControllerId();// 得到本机uuid
+		ControllerModel c = controllers.get(m.getUuid());// 得到故障控制器模型
+		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);// 得到故障控制器控制的交换机
+		if (uuid.equals(load.get(0))) {
+			for (SwitchConnectModel s : switchs) {// 遍历交换机
+				for (int i = 0; i < load.size(); i++) {
+					if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) && isConnected(s.getDpid(), load.get(i))) {// 如果交换机角色MASTER并且负载最小的是自己.
+						DatapathId dpid = DatapathId.of(s.getDpid());
+						removeMasterMap(dpid.toString());
+						IOFSwitch sw = switchService.getSwitch(dpid);
+						log.info("change master {}<-->{}", uuid, dpid);
+						sw.writeRequest(sw.getOFFactory().buildRoleRequest()
+								.setGenerationId(U64.ZERO)
+								.setRole(OFControllerRole.ROLE_MASTER).build());
+						break;
+					}
+				}
+			}
+			controllerMappingSwitch.remove(c);
+			controllers.remove(c);
 		}
-		controllerMappingSwitch.remove(c);
-		controllers.remove(c);
 	}
 }

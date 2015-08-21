@@ -1,4 +1,4 @@
-package net.dsc.cluster;
+package net.dsc.hazelcast.listener;
 
 import com.hazelcast.core.MembershipEvent;
 

@@ -18,11 +18,11 @@ import java.util.concurrent.Executors;
 
 import net.dsc.cluster.HAListenerTypeMarker;
 import net.dsc.cluster.HARole;
-import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.hazelcast.IHazelcastService;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFConnectionBackend;

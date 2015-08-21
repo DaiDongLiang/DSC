@@ -14,10 +14,12 @@
  *    under the License.
  **/
 
-package net.dsc.cluster;
+package net.dsc.hazelcast.listener;
 
 import java.util.Map;
 
+import net.dsc.cluster.HAListenerTypeMarker;
+import net.dsc.cluster.HARole;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IListener;
 

@@ -43,7 +43,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.dsc.cluster.HAListenerTypeMarker;
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.IHAListener;
+import net.dsc.cluster.model.LinkModel;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IShutdownService;
@@ -1243,7 +1244,7 @@ IFloodlightModule, IInfoProvider {
 
 	private boolean addLink(Link lt, LinkInfo newInfo) {
 		NodePortTuple srcNpt, dstNpt;
-
+		clusterService.addLink(lt.getSrc().toString(), LinkModel.of(lt));
 		srcNpt = new NodePortTuple(lt.getSrc(), lt.getSrcPort());
 		dstNpt = new NodePortTuple(lt.getDst(), lt.getDstPort());
 
@@ -1426,7 +1427,9 @@ IFloodlightModule, IInfoProvider {
 			for (Link lt : links) {
 				srcNpt = new NodePortTuple(lt.getSrc(), lt.getSrcPort());
 				dstNpt = new NodePortTuple(lt.getDst(), lt.getDstPort());
-
+				
+				clusterService.deleteLink(lt.getSrc().toString(), LinkModel.of(lt));
+				clusterService.deleteLink(lt.getDst().toString(), LinkModel.of(lt));
 				if (switchLinks.containsKey(lt.getSrc())) {
 					switchLinks.get(lt.getSrc()).remove(lt);
 					if (switchLinks.get(lt.getSrc()).isEmpty())

@@ -235,7 +235,11 @@
         <backup-count>2</backup-count>
         <value-collection-type>SET</value-collection-type>
     </multimap>
-
+    
+    <multimap name="switchlinks">
+        <backup-count>2</backup-count>
+        <value-collection-type>SET</value-collection-type>
+    </multimap>
 
     <jobtracker name="default">
         <max-thread-size>0</max-thread-size>

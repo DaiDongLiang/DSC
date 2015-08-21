@@ -37,9 +37,9 @@ import java.util.concurrent.TimeUnit;
 
 import net.dsc.cluster.HAListenerTypeMarker;
 import net.dsc.cluster.HARole;
-import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.RoleInfo;
 import net.dsc.cluster.model.ControllerModel;
+import net.dsc.hazelcast.listener.IHAListener;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IInfoProvider;

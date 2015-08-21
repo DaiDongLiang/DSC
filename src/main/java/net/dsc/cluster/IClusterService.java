@@ -7,6 +7,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
 import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.LinkModel;
 import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.cluster.model.SwitchModel;
 import net.floodlightcontroller.core.module.IFloodlightService;
@@ -28,6 +29,7 @@ public interface  IClusterService extends IFloodlightService{
 	public void putMasterMap(String dpid);
     public void removeMasterMap(String dpid);
 	public IMap<String, String> getMasterMap();
+	
 	//控制器负载集合
 	public void ControllerLoadIncrease(String controllerId,int num);
 	public void ControllerLoadReduce(String controllerId,int num);
@@ -39,5 +41,10 @@ public interface  IClusterService extends IFloodlightService{
 	public void putSwitch(SwitchModel s);
 	public void removeSwitch(String dpid);
 	public IMap<String, SwitchModel> getSwithcs();
+	
+	//链路集合
+	public MultiMap<String, LinkModel> getLinks();
+	public void addLink(String dpid,LinkModel link);
+	public void deleteLink(String dpid,LinkModel link);
 	
 }
