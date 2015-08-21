@@ -55,8 +55,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 	private IMap<String, Integer> controllerLoad;
 	private IMap<String, String> masterMap;
-	public ClusterManager() {
-	}
+	
+	public ClusterManager() { }
+	
+	//交换机集合
 	@Override
 	public void putSwitch(SwitchModel s){
 		switchs.put(s.getDpid(), s);
@@ -69,6 +71,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void removeSwitch(String dpid) {
 		switchs.remove(dpid);
 	}
+	
+	//控制器负载
 	@Override
 	public List<String> getSortedControllerLoad() {
 		List<String> list = new ArrayList<String>();
@@ -93,7 +97,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		}
 		return list;
 	}
-	//控制器负载
+	
 	@Override
 	public synchronized void ControllerLoadIncrease(String controllerId, int num) {
 		log.info("controller {} increase {}", controllerId, num);
@@ -121,8 +125,6 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	@Override
 	public void ControllerLoadReset(String controllerId) {
 		if (controllerLoad.containsKey(controllerId))
-			controllerLoad.clear();
-		else
 			controllerLoad.put(controllerId, 0);
 	}
 	

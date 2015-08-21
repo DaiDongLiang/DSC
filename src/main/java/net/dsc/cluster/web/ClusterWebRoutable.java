@@ -1,10 +1,10 @@
 package net.dsc.cluster.web;
 
+import net.floodlightcontroller.restserver.RestletRoutable;
+
 import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
-
-import net.floodlightcontroller.restserver.RestletRoutable;
 
 public class ClusterWebRoutable implements RestletRoutable{
 
@@ -13,6 +13,7 @@ public class ClusterWebRoutable implements RestletRoutable{
 		Router router = new Router(context);
         router.attach("/switches/json", SwitchesResource.class);
         router.attach("/controllers/json", ControllersResource.class);
+        router.attach("/balance", BalanceResource.class);
 		return router;
 	}
 
