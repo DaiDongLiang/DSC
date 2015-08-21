@@ -252,7 +252,7 @@ public class SwitchRoleResource extends ServerResource {
 				switchHasMaster = true;
 			}
 		}
-
+		System.out.println(controllerId+switchId+role);
 		if (isControllerId && isSwitchId) {// 如果交换机和控制器都存在
 			DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
 			IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
