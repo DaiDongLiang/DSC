@@ -477,7 +477,7 @@ public class SwitchRoleResource extends ServerResource {
 
 	}
 
-	private void selectMaster(
+	/*private void selectMaster(
 			List<String> sortList,
 			MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole,
 			IMap<String, ControllerModel> controllers, String switchId,
@@ -494,7 +494,7 @@ public class SwitchRoleResource extends ServerResource {
 				}
 			}
 		}
-	}
+	}*/
 
 	private boolean isSwitchExist(String switchId,
 			MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole) {
@@ -514,7 +514,7 @@ public class SwitchRoleResource extends ServerResource {
 
 	}
 
-	protected class SetConcurrentRoleThread extends Thread {
+	/*protected class SetConcurrentRoleThread extends Thread {
 		private OFRoleReply switchReply;
 		private OFControllerRole role;
 		private IOFSwitch sw;
@@ -541,9 +541,9 @@ public class SwitchRoleResource extends ServerResource {
 		public void run() {
 			switchReply = setSwitchRole(sw, role);
 		}
-	}
+	}*/
 
-	private static OFRoleReply setSwitchRole(IOFSwitch sw, OFControllerRole role) {
+	/*private static OFRoleReply setSwitchRole(IOFSwitch sw, OFControllerRole role) {
 		try {
 			if (sw.getOFFactory().getVersion().compareTo(OFVersion.OF_12) < 0) {
 				OFNiciraControllerRole nrole;
@@ -577,10 +577,10 @@ public class SwitchRoleResource extends ServerResource {
 				OFNiciraControllerRoleReply nreply = future.get(10,
 						TimeUnit.SECONDS);
 				if (nreply != null) {
-					/*
+					
 					 * Turn the OFControllerRoleReply into a
 					 * OFNiciraControllerRoleReply
-					 */
+					 
 					switch (nreply.getRole()) {
 					case ROLE_MASTER:
 						return OFFactories.getFactory(OFVersion.OF_13)
@@ -620,7 +620,7 @@ public class SwitchRoleResource extends ServerResource {
 			log.error(e.getMessage());
 		}
 		return null;
-	}
+	}*/
 
 	private static OFControllerRole parseRole(String role) {
 		if (role == null || role.isEmpty()) {

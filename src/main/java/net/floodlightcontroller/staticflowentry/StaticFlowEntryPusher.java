@@ -209,7 +209,7 @@ implements IOFSwitchListener, IFloodlightModule, IStaticFlowEntryPusherService, 
 	protected Map<String, String> entry2dpid;
 
 	// Class to sort FlowMod's by priority, from lowest to highest
-	class FlowModSorter implements Comparator<String> {
+	class FlowModSorter implements Comparator<String> {//流表优先级排序
 		private String dpid;
 		public FlowModSorter(String dpid) {
 			this.dpid = dpid;
@@ -486,7 +486,7 @@ implements IOFSwitchListener, IFloodlightModule, IStaticFlowEntryPusherService, 
 			Iterator<IResultSet> it = resultSet.iterator();
 			while (it.hasNext()) {
 				Map<String, Object> row = it.next().getRow();
-				parseRow(row, entriesToAdd);
+				parseRow(row, entriesToAdd);//把需要改动的row放到数据里面
 			}
 		}
 		// batch updates by switch and blast them out
