@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.SwitchModel;
+import net.dsc.cluster.model.SwitchModel;
 import net.floodlightcontroller.core.web.serializers.DPIDSerializer;
 
 import org.projectfloodlight.openflow.types.DatapathId;

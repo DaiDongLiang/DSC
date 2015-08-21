@@ -6,6 +6,9 @@ import java.util.Map;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
+import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.SwitchConnectModel;
+import net.dsc.cluster.model.SwitchModel;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
 public interface  IClusterService extends IFloodlightService{

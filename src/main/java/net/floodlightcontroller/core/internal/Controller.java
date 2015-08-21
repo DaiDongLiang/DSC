@@ -36,12 +36,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import net.dsc.cluster.ControllerModel;
 import net.dsc.cluster.HAListenerTypeMarker;
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.RoleInfo;
+import net.dsc.cluster.model.ControllerModel;
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.ControllerId;
 import net.floodlightcontroller.core.FloodlightContext;

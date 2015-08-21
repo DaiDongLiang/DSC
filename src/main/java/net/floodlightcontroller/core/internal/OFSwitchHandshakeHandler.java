@@ -16,7 +16,7 @@ import org.jboss.netty.util.Timer;
 
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.SwitchModel;
+import net.dsc.cluster.model.SwitchModel;
 import net.floodlightcontroller.core.IOFConnection;
 import net.floodlightcontroller.core.IOFConnectionBackend;
 import net.floodlightcontroller.core.IOFSwitch;

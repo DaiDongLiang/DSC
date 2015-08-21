@@ -1,4 +1,4 @@
-package net.dsc.cluster;
+package net.dsc.cluster.model;
 
 import java.io.Serializable;
 

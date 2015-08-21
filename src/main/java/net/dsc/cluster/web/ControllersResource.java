@@ -3,8 +3,8 @@ package net.dsc.cluster.web;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.dsc.cluster.ControllerModel;
 import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.model.ControllerModel;
 
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;

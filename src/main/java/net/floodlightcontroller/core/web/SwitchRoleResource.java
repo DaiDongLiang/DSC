@@ -38,9 +38,9 @@ import org.projectfloodlight.openflow.types.U64;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
-import net.dsc.cluster.ControllerModel;
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.SwitchConnectModel;
+import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.IFloodlightProviderService;

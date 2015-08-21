@@ -16,12 +16,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 
-import net.dsc.cluster.ControllerModel;
 import net.dsc.cluster.HAListenerTypeMarker;
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IHAListener;
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.SwitchConnectModel;
+import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.hazelcast.IHazelcastService;
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;

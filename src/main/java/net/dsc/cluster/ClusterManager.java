@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.dsc.cluster.model.ControllerModel;
+import net.dsc.cluster.model.SwitchConnectModel;
+import net.dsc.cluster.model.SwitchModel;
 import net.dsc.cluster.web.ClusterWebRoutable;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.listener.ControllerMembershipListener;
