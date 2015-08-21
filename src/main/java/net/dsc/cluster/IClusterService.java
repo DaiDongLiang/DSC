@@ -14,6 +14,7 @@ public interface  IClusterService extends IFloodlightService{
 	public  void putControllerMappingSwitch(ControllerModel c,String dpid,String role);
 	public void removeControllerMappingSwitch(ControllerModel c, String dpid);
 	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch();
+	public boolean isConnected(String dpid,String uuid);
 	//控制器集合
 	public void addController(ControllerModel c);
 	public void removeController(ControllerModel c);

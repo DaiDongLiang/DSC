@@ -124,8 +124,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	@Override
 	public void ControllerLoadReset(String controllerId) {
-		if (controllerLoad.containsKey(controllerId))
-			controllerLoad.put(controllerId, 0);
+		controllerLoad.put(controllerId, 0);
 	}
 	
 	public IMap<String , Integer> getControllerLoad(){
@@ -160,6 +159,18 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	public IMap<String, String> getMasterMap() {
 		return masterMap;
+	}
+	//控制器映射
+	
+	@Override
+	public boolean isConnected(String dpid, String uuid) {
+		ControllerModel c=controllers.get(uuid);
+		Collection<SwitchConnectModel> switchs=controllerMappingSwitch.get(c);
+		for(SwitchConnectModel s:switchs){
+			if(s.getDpid().equals(dpid))
+				return true;
+		}
+		return false;
 	}
 	
 	@Override

@@ -858,10 +858,8 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
         
 
         this.controller=new ControllerModel(hazelcast.getLocalMember().getUuid(),hazelcast.getLocalMember().getSocketAddress().getAddress().toString());
-
         clusterService.addController(controller);
         clusterService.ControllerLoadReset(controller.getControllerId());
-        
     }
 
     /**

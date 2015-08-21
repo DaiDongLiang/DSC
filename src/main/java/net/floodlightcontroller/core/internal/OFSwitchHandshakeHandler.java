@@ -1268,6 +1268,13 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		@Override
 		void enterState(){
 			//cluster
+			clusterService.putSwitch(new SwitchModel.Builder()
+			.dpid(getDpid()
+			.toString())
+			.date(new Date())
+			.ip(sw.getInetAddress().toString())
+			.version(featuresReply.getVersion().toString()).build());
+			
 			sendRoleRequest(roleManager.getOFControllerRole(getDpid()));
 		}
 	}
@@ -1291,12 +1298,7 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.MASTER);
 			
 			//cluster
-			clusterService.putSwitch(new SwitchModel.Builder()
-																				.dpid(getDpid()
-																				.toString())
-																				.date(new Date())
-																				.ip(sw.getInetAddress().toString())
-																				.version(featuresReply.getVersion().toString()).build());
+
 			clusterService.putMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 			clusterService.ControllerLoadIncrease(roleManager.getController().getControllerModel().getControllerId(), 1);
@@ -1439,12 +1441,6 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 			setSwitchStatus(SwitchStatus.SLAVE);
 			
 			//cluster
-			clusterService.putSwitch(new SwitchModel.Builder()
-			.dpid(getDpid()
-			.toString())
-			.date(new Date())
-			.ip(sw.getInetAddress().toString())
-			.version(featuresReply.getVersion().toString()).build());
 			clusterService.removeMasterMap(getDpid().toString());
 			clusterService.putControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);		

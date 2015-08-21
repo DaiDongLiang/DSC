@@ -19,7 +19,7 @@ public class ControllersResource extends ServerResource{
 				String controllerIp, Integer controllerLoad) {
 			this.controllerId = controllerId;
 			this.controllerIp = controllerIp;
-			this.controllerLoad = controllerLoad;
+			this.controllerLoad =controllerLoad;
 		}
 
 		public String getControllerId() {

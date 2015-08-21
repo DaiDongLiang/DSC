@@ -70,7 +70,6 @@ public class SwitchesResource extends ServerResource {
     @Get("json")
     public Set<DatapathIDJsonSerializerWrapper> retrieve(){
         IClusterService clusterService = (IClusterService) getContext().getAttributes().get(IClusterService.class.getCanonicalName());
-        
         Set<DatapathIDJsonSerializerWrapper> dpidSets = new HashSet<DatapathIDJsonSerializerWrapper>();
         for(SwitchModel s:clusterService.getSwithcs().values()){
             dpidSets.add(new DatapathIDJsonSerializerWrapper(DatapathId.of(s.getDpid()),s.getIp(),s.getDate().toString(),s.getVersoin()));	
