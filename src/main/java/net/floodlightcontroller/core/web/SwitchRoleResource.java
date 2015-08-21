@@ -328,7 +328,7 @@ public class SwitchRoleResource extends ServerResource {
 						hazelcastService.publishRoleMessage(new RoleMessage(
 								"SLAVE", switchId), controllerId);// 让请求控制器变为slave
 
-						retValue.put("ok", "请求已发送");
+						retValue.put("ok", "slave请求已发送");
 						return retValue;
 
 					case ROLE_MASTER:// 请求角色为master
@@ -353,7 +353,7 @@ public class SwitchRoleResource extends ServerResource {
 						}
 						hazelcastService.publishRoleMessage(new RoleMessage(
 								"MASTER", switchId), controllerId);// 让请求控制器变为master
-						retValue.put("ok", "请求已发送");
+						retValue.put("ok", "master请求已发送");
 						return retValue;
 					
 					default:
