@@ -23,7 +23,7 @@ public interface IHazelcastService extends IFloodlightService{
 	
 	public <T> IList<T>  getList(String ListName);
 	
-	public void publishFlowMessage(FlowMessage flowMessage);
+	public void publishFlowMessage(FlowMessage flowMessage,String ControllerId);
 	
 	public Member getLocalMember();
 	
