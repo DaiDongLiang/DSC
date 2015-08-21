@@ -14,7 +14,7 @@
  *    under the License.
  **/
 
-package net.dsc.cluster.web;
+package net.floodlightcontroller.core.web;
 
 import java.io.IOException;
 import java.lang.Thread.State;
@@ -46,7 +46,6 @@ import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
-import net.floodlightcontroller.core.web.CoreWebRoutable;
 
 import org.restlet.resource.Get;
 import org.slf4j.Logger;
