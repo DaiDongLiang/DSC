@@ -162,7 +162,7 @@ public class SwitchRoleResource extends ServerResource {
 	/* for some reason @Post("json") isn't working here... */
 	@Post
 	public Map<String, String> setRole(String json) {
-
+		
 		IFloodlightProviderService floodlightProvider = (IFloodlightProviderService) getContext()
 				.getAttributes().get(
 						IFloodlightProviderService.class.getCanonicalName());
@@ -236,7 +236,7 @@ public class SwitchRoleResource extends ServerResource {
 			return retValue;
 
 		}
-		// System.out.println(masterMap.values());
+		
 
 		isSwitchId = isSwitchExist(switchId, ControllerMappingRole);// 判断switchId是否存在
 
@@ -252,12 +252,12 @@ public class SwitchRoleResource extends ServerResource {
 				switchHasMaster = true;
 			}
 		}
-		System.out.println(controllerId+switchId+role);
+		
 		if (isControllerId && isSwitchId) {// 如果交换机和控制器都存在
 			DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
 			IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
 			OFControllerRole controllerRole = parseRole(role);// 解析role
-
+			System.out.println(masterMap.values());
 			if (switchHasMaster) {// 如果交换机有主
 
 				isControllerMasterSwitch = masterMap.get(switchId).equals(
@@ -365,6 +365,7 @@ public class SwitchRoleResource extends ServerResource {
 				}
 
 			} else {// 如果交换机无主
+				System.out.println("现在无主");
 				switch (controllerRole) {
 				default:
 					retValue.put("error", "not support role");
