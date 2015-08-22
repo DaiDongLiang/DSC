@@ -303,7 +303,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 				}
 			}
 			controllerMappingSwitch.remove(c);
-			controllers.remove(c);
+			controllers.remove(c.getControllerId());
+	
 		}
 	}
 }

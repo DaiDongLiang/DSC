@@ -123,7 +123,7 @@
     </queue>
 
     
-    <map name="master">
+    <map name="master_map">
         <!--
            Data type that will be used for storing recordMap.
            Possible values:
@@ -138,7 +138,7 @@
             then all entries of the map will be copied to another JVM for
             fail-safety. 0 means no backup.
         -->
-        <backup-count>2</backup-count>
+        <backup-count>6</backup-count>
         <!--
             Number of async backups. 0 means no backup.
         -->
