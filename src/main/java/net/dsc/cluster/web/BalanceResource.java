@@ -31,10 +31,12 @@ public class BalanceResource extends ServerResource{
        		hazelcastService.publishRoleMessage(new RoleMessage("SLAVE", m.getKey()),m.getValue());	
         }
         for(int i=0;i<dpidList.size();i++){
-        	int index=i % (uuidList.size());
-        	for(;index<uuidList.size();index++){
+        	for(int index=0;index<uuidList.size();index++){
         		if(clusterService.isConnected(dpidList.get(i), uuidList.get(index))){
         			hazelcastService.publishRoleMessage(new RoleMessage("MASTER", dpidList.get(i)), uuidList.get(index));
+        			String temp=uuidList.get(index);
+        			uuidList.remove(index);
+        			uuidList.add(temp);
         			break;
         		}
         	}
