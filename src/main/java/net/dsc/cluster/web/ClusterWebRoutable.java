@@ -16,10 +16,11 @@ public class ClusterWebRoutable implements RestletRoutable{
 		Router router = new Router(context);
         router.attach("/switches/json", SwitchesResource.class);
         router.attach("/controllers/json", ControllersResource.class);
-        router.attach("/balance", BalanceResource.class);
+        router.attach("/balance/json", BalanceResource.class);
         router.attach("/switches/{" + STR_SWITCH_ID + "}/role/json", SwitchesRoleResource.class);
         router.attach("/entrypusher/json",FlowEntryPusherResource.class);
-        router.attach("/links/json",LinksRersource.class);
+        router.attach("/links/json",LinksResource.class);
+        router.attach("/master/json",MasterResource.class);
 		return router;
 	}
 

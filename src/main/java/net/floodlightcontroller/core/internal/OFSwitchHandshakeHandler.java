@@ -1853,9 +1853,9 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 		if(initialRole!=OFControllerRole.ROLE_SLAVE){
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
 			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
+			clusterService.removeMasterMap(getDpid().toString());
 		}
 		else{
-			clusterService.removeMasterMap(getDpid().toString());
 			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 		}
 		clusterService.removeSwitch(getDpid().toString());

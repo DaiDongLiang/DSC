@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.IClusterService;
+import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.model.SwitchConnectModel;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.message.RoleMessage;
@@ -161,7 +161,7 @@ public class SwitchesRoleResource extends ServerResource {
 		IMap<String, ControllerModel> controllers = clusterService
 				.getControllers();
 
-		IMap<String, String> masterMap = clusterService.getMasterMap();
+		IMap<String, UUID> masterMap = clusterService.getMasterMap();
 
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
 
@@ -242,7 +242,7 @@ public class SwitchesRoleResource extends ServerResource {
 				isControllerMasterSwitch = masterMap.get(switchId).equals(
 						controllerId);
 
-				String masterControllerId = masterMap.get(switchId);
+				String masterControllerId = masterMap.get(switchId).toString();
 
 				if (controllerId.equals(localId)) {// 判断请求id是否为本地id
 
