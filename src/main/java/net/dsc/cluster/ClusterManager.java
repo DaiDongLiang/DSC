@@ -1,6 +1,11 @@
 package net.dsc.cluster;
 
-import static net.dsc.cluster.HazelcastTableNameConstant.*;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_LOAD_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_MAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.CONTROLLER_SWITCH_MULITMAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.MASTER_MAP;
+import static net.dsc.cluster.HazelcastTableNameConstant.SWITCHS_LINKS_MULITMAP_NAME;
+import static net.dsc.cluster.HazelcastTableNameConstant.SWITCHS_MAP_NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.model.LinkModel;
@@ -56,7 +62,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	private IMap<String, SwitchModel> switchs;
 	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 	private IMap<String, Integer> controllerLoad;
-	private IMap<String, String> masterMap;
+	private IMap<String, UUID> masterMap;
 	private MultiMap<String, LinkModel> switchlinks;
 	public ClusterManager() {
 	}
@@ -131,7 +137,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	}
 
 	@Override
-	public void ControllerLoadReduce(String controllerId, int num) {
+	public synchronized void ControllerLoadReduce(String controllerId, int num) {
 		if (num < 0)
 			throw new IllegalArgumentException("num < 0");
 		Integer i = controllerLoad.get(controllerId);
@@ -145,7 +151,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public void ControllerLoadReset(String controllerId) {
 		controllerLoad.put(controllerId, 0);
 	}
-
+	
+	@Override
 	public IMap<String, Integer> getControllerLoad() {
 		return controllerLoad;
 	}
@@ -161,15 +168,16 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		controllers.remove(c.getControllerId());
 
 	}
-
+	@Override
 	public IMap<String, ControllerModel> getControllers() {
 		return controllers;
 	}
-
+	
+	//masterMap
 	@Override
 	public void putMasterMap(String dpid) {
-		masterMap.put(dpid, floodlightProvider.getControllerModel()
-				.getControllerId());
+		masterMap.put(dpid, UUID.fromString(floodlightProvider.getControllerModel()
+				.getControllerId()));
 	}
 
 	@Override
@@ -177,8 +185,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		if (masterMap.containsKey(dpid))
 			masterMap.remove(dpid);
 	}
-
-	public IMap<String, String> getMasterMap() {
+	@Override
+	public IMap<String, UUID> getMasterMap() {
 		return masterMap;
 	}
 
@@ -203,10 +211,9 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	@Override
 	public synchronized void putControllerMappingSwitch(ControllerModel c,
 			String dpid, String role) {
-		putControllerMappingSwitch(c,
-				new SwitchConnectModel(c.getControllerId(), dpid, role));
+		putControllerMappingSwitch(c, new SwitchConnectModel(c.getControllerId(), dpid, role));
 	}
-
+	
 	private void putControllerMappingSwitch(ControllerModel c,
 			SwitchConnectModel s) {
 		for (Iterator<SwitchConnectModel> i = controllerMappingSwitch.get(c)
@@ -220,7 +227,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		}
 		controllerMappingSwitch.put(c, s);
 	}
-
+	@Override
 	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch() {
 		return controllerMappingSwitch;
 	}
@@ -260,8 +267,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		switchService = context.getServiceImpl(IOFSwitchService.class);
 		restApiService = context.getServiceImpl(IRestApiService.class);
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
-		controllerMappingSwitch = hazelcast
-				.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
+		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
@@ -304,7 +310,9 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 			}
 			controllerMappingSwitch.remove(c);
 			controllers.remove(c.getControllerId());
+
 	
+
 		}
 	}
 }
