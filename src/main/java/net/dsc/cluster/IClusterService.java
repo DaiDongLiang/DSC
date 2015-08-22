@@ -49,4 +49,5 @@ public interface  IClusterService extends IFloodlightService{
 	public void addLink(String dpid,LinkModel link);
 	public void deleteLink(String dpid,LinkModel link);
 	
+	public void switchRemove(String dpid);
 }

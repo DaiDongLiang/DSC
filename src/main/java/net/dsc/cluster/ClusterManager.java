@@ -26,6 +26,8 @@ import net.dsc.cluster.web.ClusterWebRoutable;
 import net.dsc.hazelcast.IHazelcastService;
 import net.dsc.hazelcast.listener.ControllerMembershipListener;
 import net.dsc.hazelcast.listener.IControllerListener;
+import net.dsc.hazelcast.listener.ISwitchListener;
+import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
@@ -48,7 +50,7 @@ import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MultiMap;
 
 public class ClusterManager implements IFloodlightModule, IClusterService,
-		IControllerListener {
+		IControllerListener,ISwitchListener{
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ClusterManager.class);
@@ -198,7 +200,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		Map<String, UUID> master=new HashMap<String, UUID>();
 		for(ControllerModel c:controllerMappingSwitch.keySet()){
 			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
-				if(s.getRole().equals(OFControllerRole.ROLE_MASTER)){
+				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
 					master.put(s.getDpid(), UUID.fromString(c.getControllerId()));
 				}
 			}
@@ -247,7 +249,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public MultiMap<ControllerModel, SwitchConnectModel> getControllerMappingSwitch() {
 		return controllerMappingSwitch;
 	}
-
+	@Override
+	public void switchRemove(String dpid) {
+		switchDisconnected(dpid);
+	}
 	// ===============================IFloodlightModule=======================
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
@@ -309,7 +314,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		String uuid = floodlightProvider.getControllerModel().getControllerId();// 得到本机uuid
 		ControllerModel c = controllers.get(m.getUuid());// 得到故障控制器模型
 		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);// 得到故障控制器控制的交换机
-		if (uuid.equals(load.get(0))) {
+		if (!load.isEmpty()&&uuid.equals(load.get(0))) {
 			for (SwitchConnectModel s : switchs) {// 遍历交换机
 				for (int i = 0; i < load.size(); i++) {
 					if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) && isConnected(s.getDpid(), load.get(i))) {// 如果交换机角色MASTER并且负载最小的是自己.
@@ -327,5 +332,16 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 			controllerMappingSwitch.remove(c);
 			controllers.remove(c.getControllerId());
 		}
+	}
+	@Override
+	public void switchDisconnected(String dpid) {
+		List<String> load = ImmutableList.copyOf(getSortedControllerLoad());// 取得控制器负载排序
+		for(String uuid:load){
+			if(isConnected(dpid, uuid)){
+				hazelcast.publishRoleMessage(new RoleMessage("MASTER", dpid), uuid);
+				return;
+			}
+		}
+		log.info("{} move cluster",dpid);
 	}
 }

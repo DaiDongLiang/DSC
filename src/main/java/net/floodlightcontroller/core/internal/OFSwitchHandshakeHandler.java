@@ -12,8 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import org.jboss.netty.util.Timer;
-
 import net.dsc.cluster.HARole;
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.model.SwitchModel;
@@ -28,6 +26,7 @@ import net.floodlightcontroller.core.annotations.LogMessageDoc;
 import net.floodlightcontroller.core.annotations.LogMessageDocs;
 import net.floodlightcontroller.core.internal.OFSwitchAppHandshakePlugin.PluginResultType;
 
+import org.jboss.netty.util.Timer;
 import org.projectfloodlight.openflow.protocol.OFBadRequestCode;
 import org.projectfloodlight.openflow.protocol.OFBarrierReply;
 import org.projectfloodlight.openflow.protocol.OFBarrierRequest;
@@ -80,7 +79,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.hazelcast.cluster.ClusterService;
 
 /**
  * Switch handler deals with the switch connection and dispatches
@@ -1850,10 +1848,11 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 	public void connectionClosed(IOFConnectionBackend connection) {
 		
 		//culster
-		if(initialRole!=OFControllerRole.ROLE_SLAVE){
+		if(initialRole==OFControllerRole.ROLE_MASTER){
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
 			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
 			clusterService.removeMasterMap(getDpid().toString());
+			clusterService.switchRemove(getDpid().toString());
 		}
 		else{
 			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
