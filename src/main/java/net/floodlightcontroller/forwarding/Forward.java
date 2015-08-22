@@ -75,7 +75,6 @@ public class Forward implements IFloodlightModule,IOFMessageListener{
 		String dpid=sw.getId().toString();
 		initMap(dpid);
 		macPort.get(dpid).put(src, inPort.getPortNumber());//记录地址
-		System.out.println(macPort.get(dpid));
 		Integer outPort;
 		if(macPort.get(dpid).keySet().contains(dst)){
 			outPort=macPort.get(dpid).get(dst);
