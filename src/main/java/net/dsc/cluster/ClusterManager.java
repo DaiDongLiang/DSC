@@ -192,7 +192,20 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	public MultiMap<String, UUID> getMasterMap() {
 		return masterMap;
 	}
-
+	
+	@Override
+	public Map<String, UUID> getMasterMapFromCS() {
+		Map<String, UUID> master=new HashMap<String, UUID>();
+		for(ControllerModel c:controllerMappingSwitch.keySet()){
+			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
+				if(s.getRole().equals(OFControllerRole.ROLE_MASTER)){
+					master.put(s.getDpid(), UUID.fromString(c.getControllerId()));
+				}
+			}
+		}
+		return master;
+	}
+	
 	// 控制器映射
 
 	@Override

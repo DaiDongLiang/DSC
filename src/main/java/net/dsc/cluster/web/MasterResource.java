@@ -1,17 +1,17 @@
 package net.dsc.cluster.web;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
 
 import net.dsc.cluster.IClusterService;
-import net.dsc.cluster.model.SwitchConnectModel;
 
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
 public class MasterResource extends ServerResource{
 	@Get("json")
-	public Collection<SwitchConnectModel> masterMap(){
+	public Map<String,UUID> masterMap(){
         IClusterService clusterService = (IClusterService) getContext().getAttributes().get(IClusterService.class.getCanonicalName());
-        return clusterService.getControllerMappingSwitch().values();
+        return clusterService.getMasterMapFromCS();
 	}
 }
