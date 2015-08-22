@@ -1,10 +1,14 @@
 package net.dsc.hazelcast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.dsc.cluster.web.FlowEntryPushUtil;
+import net.dsc.hazelcast.listener.FlowMessageListener;
+import net.dsc.hazelcast.listener.RoleMessageListener;
 import net.dsc.hazelcast.message.FlowMessage;
 import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.IOFSwitch;
@@ -13,8 +17,11 @@ import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
+import net.floodlightcontroller.staticflowentry.StaticFlowEntryPusher;
+import net.floodlightcontroller.storage.IStorageSourceService;
 
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
+import org.projectfloodlight.openflow.protocol.OFFlowMod;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.U64;
 import org.slf4j.Logger;
@@ -32,7 +39,7 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import com.hazelcast.core.MultiMap;
 
-public class HazelcastService implements IHazelcastService,IFloodlightModule,MessageListener<RoleMessage>{
+public class HazelcastService implements IHazelcastService,IFloodlightModule,IMessageListener{
 	private  static final String FlowMessageTopic = "flowMessageTopic";
 	private static final String STR_ROLE_MASTER = "MASTER"; 
 	
@@ -45,6 +52,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 
 	private HazelcastInstance hazelcastInstance = null;
 	private HazelcastInstance client = null;
+	private static IStorageSourceService storageSourceService = null;
 	private static IOFSwitchService switchService = null;
 
 	@Override
@@ -93,6 +101,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
 		l.add(IOFSwitchService.class);
+		l.add(IStorageSourceService.class);
 		return l;
 	}
 	//test
@@ -101,6 +110,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 			throws FloodlightModuleException {
 		log.info("Hazelcast Init");
 		switchService = context.getServiceImpl(IOFSwitchService.class);
+		storageSourceService = context.getServiceImpl(IStorageSourceService.class);
 		hazelcastInstance = HazelcastManager.getHazelcastInstance();
 		client = HazelcastManager.getHazelcastClient();
 	}
@@ -108,13 +118,17 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 	@Override
 	public void startUp(FloodlightModuleContext context)
 			throws FloodlightModuleException {
-		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
-		HazelcastListenerManager.addListenRoleChange(getLocalMember().getUuid(),this);
+/*		HazelcastListenerManager.addFlowMessageListener(FlowMessageTopic);
+		HazelcastListenerManager.addListenRoleChange(getLocalMember().getUuid(),new FlowM);*/
+		
+		HazelcastListenerManager.addMessageListener(getLocalMember().getUuid(), new RoleMessageListener(this));
+		HazelcastListenerManager.addMessageListener(getLocalMember().getUuid()+"flow", new FlowMessageListener(this));
+		
 	}
 	
 	@Override
-	public void publishFlowMessage(FlowMessage flowMessage) {
-		ITopic<FlowMessage> topic =  client.getTopic(FlowMessageTopic);
+	public void publishFlowMessage(FlowMessage flowMessage,String ControllerId) {
+		ITopic<FlowMessage> topic =  client.getTopic(ControllerId+"flow");
 		topic.publish(flowMessage);
 	}
 	
@@ -136,20 +150,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 		topic.publish(roleMessage);
 	}
 	
-	@Override
-	public void onMessage(Message<RoleMessage> message) {
-		RoleMessage roleMessage = message.getMessageObject();
-		String switchId = roleMessage.SwitchId;
-		DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
-
-		IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
-		OFControllerRole controllerRole = parseRole(roleMessage.Role);
-		sw.writeRequest(sw.getOFFactory()
-				.buildRoleRequest()
-				.setGenerationId(U64.ZERO)
-				.setRole(controllerRole).
-				build());
-	}	
+	
 
 	private static OFControllerRole parseRole(String role) {
 		if (role == null || role.isEmpty()) {
@@ -169,5 +170,40 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,Mes
 			return OFControllerRole.ROLE_NOCHANGE;
 		}
 	}
-	
+	@Override
+	public void progressRoleMessage(Message<RoleMessage> message) {
+		RoleMessage roleMessage = message.getMessageObject();
+		String switchId = roleMessage.SwitchId;
+		DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
+
+		IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
+		OFControllerRole controllerRole = parseRole(roleMessage.Role);
+		sw.writeRequest(sw.getOFFactory()
+				.buildRoleRequest()
+				.setGenerationId(U64.ZERO)
+				.setRole(controllerRole).
+				build());
+		
+	}
+	@Override
+	public void progressFlowMessage(Message<FlowMessage> Message) {
+		FlowMessage flowMessage = Message.getMessageObject();
+		Map<String,Object> rawValues = new HashMap<String,Object>();
+		
+		String json = flowMessage.json;
+		try {
+			rawValues = FlowEntryPushUtil.jsonToStorageEntry(json);
+			int state = FlowEntryPushUtil.checkFlow(rawValues);
+			if(state == 0 ){
+				storageSourceService.insertRowAsync(StaticFlowEntryPusher.TABLE_NAME, rawValues);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
 }
+	
+

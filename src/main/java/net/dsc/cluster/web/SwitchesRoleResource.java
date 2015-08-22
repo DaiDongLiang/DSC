@@ -3,9 +3,11 @@ package net.dsc.cluster.web;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.IClusterService;
@@ -53,7 +55,6 @@ public class SwitchesRoleResource extends ServerResource {
 	private static final String STR_ROLE_SLAVE = "SLAVE";
 	private static final String STR_ROLE_EQUAL = "EQUAL";
 	private static final String STR_ROLE_OTHER = "OTHER";
-	
 
 	@Get("json")
 	public HashMap<String, HashMap<String, String>> getRole() {
@@ -72,8 +73,11 @@ public class SwitchesRoleResource extends ServerResource {
 
 		if (switchId.equalsIgnoreCase(ClusterWebRoutable.STR_ALL)) {// 判斷查詢字段是否为ALL
 
-			for (IOFSwitch sw : switchService.getAllSwitchMap().values()) {// 遍歷所有交換機
-				switchId = sw.getId().toString();
+			/*
+			 * for (IOFSwitch sw : switchService.getAllSwitchMap().values()) {//
+			 * 遍歷所有交換機
+			 */for (String singleSwitchId : getAllSwitch(ControllerMappingRole)) {
+
 				HashMap<String, String> ControllerRole = new HashMap<String, String>();
 				for (ControllerModel controller : ControllerMappingRole
 						.keySet()) {
@@ -82,14 +86,15 @@ public class SwitchesRoleResource extends ServerResource {
 					Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch
 					while (it.hasNext()) {
 						SwitchConnectModel singleSwitch = it.next();
-						if (singleSwitch.getDpid().equals(switchId)) {// 有switchId則添加
+						if (singleSwitch.getDpid().equals(singleSwitchId)) {// 有switchId則添加
 							ControllerRole.put(controller.getControllerIp(),
 									singleSwitch.getRole());
 						}
 					}
+
+					model.put(singleSwitchId, ControllerRole);
 				}
 
-				model.put(switchId, ControllerRole);
 			}
 			return model;
 		} else {
@@ -136,7 +141,7 @@ public class SwitchesRoleResource extends ServerResource {
 	/* for some reason @Post("json") isn't working here... */
 	@Post
 	public Map<String, String> setRole(String json) {
-		
+
 		IFloodlightProviderService floodlightProvider = (IFloodlightProviderService) getContext()
 				.getAttributes().get(
 						IFloodlightProviderService.class.getCanonicalName());
@@ -165,7 +170,7 @@ public class SwitchesRoleResource extends ServerResource {
 
 		String switchId = (String) getRequestAttributes().get(
 				CoreWebRoutable.STR_SWITCH_ID);
-		//List<String> sortList = clusterService.getSortedControllerLoad();
+		// List<String> sortList = clusterService.getSortedControllerLoad();
 		boolean isControllerId = false;
 		boolean isSwitchId = false;// 判断交换机是否存在
 		boolean switchHasMaster = false;// 判断交换机是否有master
@@ -210,9 +215,9 @@ public class SwitchesRoleResource extends ServerResource {
 			return retValue;
 
 		}
-		
 
-		isSwitchId = isSwitchExist(switchId, ControllerMappingRole);// 判断switchId是否存在
+		Set<String> allSwitch = getAllSwitch(ControllerMappingRole);// 判断switchId是否存在
+		isSwitchId = allSwitch.contains(switchId);
 
 		for (ControllerModel controller : ControllerMappingRole.keySet()) {// 判断controllerId是否存在
 			System.out.println(controller.getControllerId());
@@ -226,7 +231,7 @@ public class SwitchesRoleResource extends ServerResource {
 				switchHasMaster = true;
 			}
 		}
-		
+
 		if (isControllerId && isSwitchId) {// 如果交换机和控制器都存在
 			DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
 			IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
@@ -286,11 +291,10 @@ public class SwitchesRoleResource extends ServerResource {
 									.setRole(controllerRole).build());
 
 						} else {// 如果请求控制器是交换机的slave，则不用做任何变化
-							
+
 						}
 						retValue.put("ok", "成为slave");
 						return retValue;
-					
 
 					}
 
@@ -306,7 +310,7 @@ public class SwitchesRoleResource extends ServerResource {
 						return retValue;
 
 					case ROLE_MASTER:// 请求角色为master
-						
+
 						if (masterControllerId.equals(localId)) {// 如果本地控制器是该交换机的master
 
 							sw.writeRequest(sw
@@ -323,13 +327,13 @@ public class SwitchesRoleResource extends ServerResource {
 										"the controller already have been the master of switch");
 								return retValue;
 							}
-						
+
 						}
 						hazelcastService.publishRoleMessage(new RoleMessage(
 								"MASTER", switchId), controllerId);// 让请求控制器变为master
 						retValue.put("ok", "master请求已发送");
 						return retValue;
-					
+
 					default:
 						retValue.put("error", "not support role");
 						return retValue;
@@ -368,7 +372,6 @@ public class SwitchesRoleResource extends ServerResource {
 
 					retValue.put("SORRY", "此控制器没有连接此交换机" + json);
 					return retValue;
-					
 
 				}
 			}
@@ -451,24 +454,19 @@ public class SwitchesRoleResource extends ServerResource {
 
 	}
 
-	/*private void selectMaster(
-			List<String> sortList,
-			MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole,
-			IMap<String, ControllerModel> controllers, String switchId,
-			IHazelcastService hazelcastService) {
-		for (String availableControllerId : sortList) {
-			Collection<SwitchConnectModel> switches = ControllerMappingRole
-					.get(controllers.get(availableControllerId));
-			Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch
-			while (it.hasNext()) {
-				SwitchConnectModel singleSwitch = it.next();
-				if (singleSwitch.getDpid().equals(switchId)) {
-					hazelcastService.publishRoleMessage(new RoleMessage(
-							"MASTER", switchId), availableControllerId);// 发master消息给合适的用户
-				}
-			}
-		}
-	}*/
+	/*
+	 * private void selectMaster( List<String> sortList,
+	 * MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole,
+	 * IMap<String, ControllerModel> controllers, String switchId,
+	 * IHazelcastService hazelcastService) { for (String availableControllerId :
+	 * sortList) { Collection<SwitchConnectModel> switches =
+	 * ControllerMappingRole .get(controllers.get(availableControllerId));
+	 * Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch while
+	 * (it.hasNext()) { SwitchConnectModel singleSwitch = it.next(); if
+	 * (singleSwitch.getDpid().equals(switchId)) {
+	 * hazelcastService.publishRoleMessage(new RoleMessage( "MASTER", switchId),
+	 * availableControllerId);// 发master消息给合适的用户 } } } }
+	 */
 	private static OFControllerRole parseRole(String role) {
 		if (role == null || role.isEmpty()) {
 			return OFControllerRole.ROLE_NOCHANGE;
@@ -488,21 +486,22 @@ public class SwitchesRoleResource extends ServerResource {
 		}
 	}
 
-	private boolean isSwitchExist(String switchId,
+	private Set<String> getAllSwitch(
 			MultiMap<ControllerModel, SwitchConnectModel> ControllerMappingRole) {
+		Set<String> allSwitch = new HashSet<String>();
+
 		for (ControllerModel controllerModel : ControllerMappingRole.keySet()) {
 			Collection<SwitchConnectModel> switches = ControllerMappingRole
 					.get(controllerModel);
 			Iterator<SwitchConnectModel> it = switches.iterator();// 遍歷switch
 			while (it.hasNext()) {
 				SwitchConnectModel singleSwitch = it.next();
-				if (singleSwitch.getDpid().equals(switchId)) {
-					return true;
-				}
+				allSwitch.add(singleSwitch.getDpid());
+
 			}
 		}
 
-		return false;
+		return allSwitch;
 	}
 
 }
