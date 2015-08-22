@@ -24,31 +24,31 @@ public class BalanceResource extends ServerResource{
         IClusterService clusterService = (IClusterService) getContext().getAttributes().get(IClusterService.class.getCanonicalName());
         IHazelcastService hazelcastService=(IHazelcastService) getContext().getAttributes().get(IHazelcastService.class.getCanonicalName());
         
-        List<String> dpidList=Lists.newArrayList(clusterService.getMasterMap().keySet());
+        Map<String, UUID> master=clusterService.getMasterMapFromCS();
+        List<String> dpidList=Lists.newArrayList(master.keySet());
         List<String> uuidList= Lists.newArrayList(clusterService.getControllers().keySet());
-        MultiMap<String,UUID> masterMap=clusterService.getMasterMap();
         for(String u:uuidList){
         	clusterService.ControllerLoadReset(u);
         }
-        System.out.println(clusterService.getMasterMap());
-        for(Map.Entry<String, UUID> m:masterMap.entrySet()){//将所有主控变为从控
+        
+        for(Map.Entry<String, UUID> m:master.entrySet()){//将所有主控变为从控
         	System.out.println(m.getKey()+"----"+m.getValue());
        		hazelcastService.publishRoleMessage(new RoleMessage("SLAVE", m.getKey()),m.getValue().toString());	
         }
-//        for(int i=0;i<dpidList.size();i++){
-//        	int length=uuidList.size();
-//        	System.out.println(i);
-//        	for(int index=0;index<length;index++){
-//        		if(clusterService.isConnected(dpidList.get(i), uuidList.get(index))){
-//        			hazelcastService.publishRoleMessage(new RoleMessage("MASTER", dpidList.get(i)), uuidList.get(index));
-//					log.info("change master {}<-->{}", uuidList.get(index),  dpidList.get(i));
-//        			String temp=uuidList.get(index);
-//        			System.out.println(index);
-//        			uuidList.add(temp);
-//        			break;
-//        		}
-//        	}
-//        }
+        for(int i=0;i<dpidList.size();i++){
+        	int length=uuidList.size();
+        	System.out.println(i);
+        	for(int index=0;index<length;index++){
+        		if(clusterService.isConnected(dpidList.get(i), uuidList.get(index))){
+        			hazelcastService.publishRoleMessage(new RoleMessage("MASTER", dpidList.get(i)), uuidList.get(index));
+					log.info("change master {}<-->{}", uuidList.get(index),  dpidList.get(i));
+        			String temp=uuidList.get(index);
+        			uuidList.remove(index);
+        			uuidList.add(temp);
+        			break;
+        		}
+        	}
+        }
         return "balance begin";
     }
 }
