@@ -196,8 +196,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	}
 
 	@Override
-	public void removeControllerMappingSwitch(ControllerModel c, String dpid) {
-		controllerMappingSwitch.remove(c, switchs.get(dpid));
+	public void removeControllerMappingSwitch(ControllerModel c, String dpid,String role) {
+		controllerMappingSwitch.remove(c, new SwitchConnectModel(c.getControllerId(), dpid, role));
 	}
 
 	@Override

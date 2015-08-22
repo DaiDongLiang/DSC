@@ -1850,11 +1850,13 @@ public class OFSwitchHandshakeHandler implements IOFConnectionListener {
 	public void connectionClosed(IOFConnectionBackend connection) {
 		
 		//culster
-		clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString());
-		clusterService.removeMasterMap(getDpid().toString());
-		
 		if(initialRole!=OFControllerRole.ROLE_SLAVE){
 			clusterService.ControllerLoadReduce(roleManager.getController().getControllerModel().getControllerId(), 1);
+			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_SLAVE.toString());
+		}
+		else{
+			clusterService.removeMasterMap(getDpid().toString());
+			clusterService.removeControllerMappingSwitch(roleManager.getController().getControllerModel(), getDpid().toString(),OFControllerRole.ROLE_MASTER.toString());
 		}
 		clusterService.removeSwitch(getDpid().toString());
 		// Disconnect handler's remaining connections
