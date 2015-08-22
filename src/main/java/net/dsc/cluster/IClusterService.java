@@ -2,6 +2,7 @@ package net.dsc.cluster;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
@@ -28,7 +29,7 @@ public interface  IClusterService extends IFloodlightService{
 	//Master集合
 	public void putMasterMap(String dpid);
     public void removeMasterMap(String dpid);
-	public IMap<String, String> getMasterMap();
+	public IMap<String, UUID> getMasterMap();
 	
 	//控制器负载集合
 	public void ControllerLoadIncrease(String controllerId,int num);

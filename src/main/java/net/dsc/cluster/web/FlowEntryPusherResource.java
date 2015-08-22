@@ -3,14 +3,16 @@ package net.dsc.cluster.web;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-import org.projectfloodlight.openflow.protocol.OFFactories;
-import org.projectfloodlight.openflow.protocol.OFFlowMod;
-import org.projectfloodlight.openflow.protocol.OFMessage;
-import org.projectfloodlight.openflow.protocol.OFVersion;
-import org.projectfloodlight.openflow.types.DatapathId;
-import org.projectfloodlight.openflow.types.TableId;
-import org.projectfloodlight.openflow.types.U16;
+import net.dsc.cluster.IClusterService;
+import net.dsc.hazelcast.IHazelcastService;
+import net.dsc.hazelcast.message.FlowMessage;
+import net.floodlightcontroller.staticflowentry.StaticFlowEntryPusher;
+import net.floodlightcontroller.storage.IStorageSourceService;
+import net.floodlightcontroller.util.InstructionUtils;
+import net.floodlightcontroller.util.MatchUtils;
+
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
@@ -21,17 +23,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.hazelcast.core.IMap;
-
-import net.dsc.cluster.IClusterService;
-import net.dsc.hazelcast.IHazelcastService;
-import net.dsc.hazelcast.message.FlowMessage;
-import net.floodlightcontroller.core.IOFSwitch;
-import net.floodlightcontroller.core.annotations.LogMessageDoc;
-import net.floodlightcontroller.core.internal.IOFSwitchService;
-import net.floodlightcontroller.staticflowentry.StaticFlowEntryPusher;
-import net.floodlightcontroller.storage.IStorageSourceService;
-import net.floodlightcontroller.util.InstructionUtils;
-import net.floodlightcontroller.util.MatchUtils;
 
 public class FlowEntryPusherResource extends ServerResource {
 
@@ -132,7 +123,7 @@ public class FlowEntryPusherResource extends ServerResource {
 		
 		IStorageSourceService storageSourceService = (IStorageSourceService)getContext()
 				.getAttributes().get(IStorageSourceService.class.getCanonicalName());
-		IMap<String, String> masterMap = clusterService.getMasterMap();
+		IMap<String, UUID> masterMap = clusterService.getMasterMap();
 
 		String localControllerId = hazelcastService.getLocalMember().getUuid();
 		String switchId = "";
@@ -141,7 +132,7 @@ public class FlowEntryPusherResource extends ServerResource {
 		try {
 			switchId = getSwitchId(json);
 			if (masterMap.containsKey(switchId)) {// 如果交换机有主
-				String controllerId = masterMap.get(switchId);
+				String controllerId = masterMap.get(switchId).toString();
 				if (controllerId.equals(localControllerId)) {// 如果请求的交换机的主是本地控制器
 					Map<String, Object> rowValues = FlowEntryPushUtil
 							.jsonToStorageEntry(json);

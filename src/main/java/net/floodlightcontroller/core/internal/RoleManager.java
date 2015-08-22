@@ -170,10 +170,14 @@ public class RoleManager {
     }
 
     public synchronized OFControllerRole getOFControllerRole(DatapathId dpid) {
+    	
+    	System.out.println(clusterService.getMasterMap().keySet());
     	if(clusterService.getMasterMap().containsKey(dpid.toString())){
+    		log.info("SLAVE:{}<-------->{}",controller.getControllerModel().getControllerId(),dpid.toString());
     		return OFControllerRole.ROLE_SLAVE;
     	}
     	else{
+    		log.info("MASTER:{}<-------->{}",controller.getControllerModel().getControllerId(),dpid.toString());
     		return OFControllerRole.ROLE_MASTER;
     	}
     			

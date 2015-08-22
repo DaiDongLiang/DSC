@@ -17,26 +17,12 @@
 package net.floodlightcontroller.core.web;
 
 import java.io.IOException;
-import java.lang.Thread.State;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.projectfloodlight.openflow.protocol.OFControllerRole;
-import org.projectfloodlight.openflow.protocol.OFFactories;
-import org.projectfloodlight.openflow.protocol.OFNiciraControllerRole;
-import org.projectfloodlight.openflow.protocol.OFNiciraControllerRoleReply;
-import org.projectfloodlight.openflow.protocol.OFRoleReply;
-import org.projectfloodlight.openflow.protocol.OFVersion;
-import org.projectfloodlight.openflow.types.DatapathId;
-import org.projectfloodlight.openflow.types.U64;
-import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
+import java.util.UUID;
 
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.model.ControllerModel;
@@ -47,7 +33,12 @@ import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 
+import org.projectfloodlight.openflow.protocol.OFControllerRole;
+import org.projectfloodlight.openflow.types.DatapathId;
+import org.projectfloodlight.openflow.types.U64;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +46,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.google.common.collect.Multimap;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MultiMap;
 
@@ -182,7 +171,7 @@ public class SwitchRoleResource extends ServerResource {
 		IMap<String, ControllerModel> controllers = clusterService
 				.getControllers();
 
-		IMap<String, String> masterMap = clusterService.getMasterMap();
+		IMap<String, UUID> masterMap = clusterService.getMasterMap();
 
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
 
@@ -263,7 +252,7 @@ public class SwitchRoleResource extends ServerResource {
 				isControllerMasterSwitch = masterMap.get(switchId).equals(
 						controllerId);
 
-				String masterControllerId = masterMap.get(switchId);
+				String masterControllerId = masterMap.get(switchId).toString();
 
 				if (controllerId.equals(localId)) {// 判断请求id是否为本地id
 

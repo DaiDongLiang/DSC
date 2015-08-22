@@ -10,7 +10,7 @@ import org.restlet.resource.ServerResource;
 
 import com.google.common.collect.ImmutableSet;
 
-public class LinksRersource extends ServerResource {
+public class LinksResource extends ServerResource {
 	 @Get("json")
 	    public Set<LinkModel> retrieve() {
 	        IClusterService clusterService = (IClusterService)getContext().getAttributes().
