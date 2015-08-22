@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.hazelcast.core.MultiMap;
 
 public class BalanceResource extends ServerResource{
 	private static final Logger log = LoggerFactory
@@ -26,7 +26,7 @@ public class BalanceResource extends ServerResource{
         
         List<String> dpidList=Lists.newArrayList(clusterService.getMasterMap().keySet());
         List<String> uuidList= Lists.newArrayList(clusterService.getControllers().keySet());
-        Map<String,UUID> masterMap=Maps.newHashMap(clusterService.getMasterMap());
+        MultiMap<String,UUID> masterMap=clusterService.getMasterMap();
         for(String u:uuidList){
         	clusterService.ControllerLoadReset(u);
         }

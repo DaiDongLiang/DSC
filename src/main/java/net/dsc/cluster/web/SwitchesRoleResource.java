@@ -161,7 +161,7 @@ public class SwitchesRoleResource extends ServerResource {
 		IMap<String, ControllerModel> controllers = clusterService
 				.getControllers();
 
-		IMap<String, UUID> masterMap = clusterService.getMasterMap();
+		MultiMap<String, UUID> masterMap = clusterService.getMasterMap();
 
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
 

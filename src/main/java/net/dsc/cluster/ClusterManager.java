@@ -62,7 +62,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	private IMap<String, SwitchModel> switchs;
 	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 	private IMap<String, Integer> controllerLoad;
-	private IMap<String, UUID> masterMap;
+	private MultiMap<String, UUID> masterMap;
 	private MultiMap<String, LinkModel> switchlinks;
 	public ClusterManager() {
 	}
@@ -176,6 +176,9 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	//masterMap
 	@Override
 	public void putMasterMap(String dpid) {
+		if(masterMap.keySet().contains(dpid)){
+			masterMap.remove(dpid);
+		}
 		masterMap.put(dpid, UUID.fromString(floodlightProvider.getControllerModel()
 				.getControllerId()));
 	}
@@ -186,7 +189,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 			masterMap.remove(dpid);
 	}
 	@Override
-	public IMap<String, UUID> getMasterMap() {
+	public MultiMap<String, UUID> getMasterMap() {
 		return masterMap;
 	}
 
@@ -269,7 +272,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
-		masterMap = hazelcast.getMap(MASTER_MAP);
+		masterMap = hazelcast.getMultiMap(MASTER_MAP);
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
 		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
 	}
