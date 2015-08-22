@@ -34,6 +34,7 @@ public class BalanceResource extends ServerResource{
         	for(int index=0;index<uuidList.size();index++){
         		if(clusterService.isConnected(dpidList.get(i), uuidList.get(index))){
         			hazelcastService.publishRoleMessage(new RoleMessage("MASTER", dpidList.get(i)), uuidList.get(index));
+					log.info("change master {}<-->{}", uuidList.get(index),  dpidList.get(i));
         			String temp=uuidList.get(index);
         			uuidList.remove(index);
         			uuidList.add(temp);
