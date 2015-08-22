@@ -22,7 +22,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.google.common.collect.Multimap;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MultiMap;
 
 public class FlowEntryPusherResource extends ServerResource {
 
@@ -123,7 +125,7 @@ public class FlowEntryPusherResource extends ServerResource {
 		
 		IStorageSourceService storageSourceService = (IStorageSourceService)getContext()
 				.getAttributes().get(IStorageSourceService.class.getCanonicalName());
-		IMap<String, UUID> masterMap = clusterService.getMasterMap();
+		MultiMap<String, UUID> masterMap = clusterService.getMasterMap();
 
 		String localControllerId = hazelcastService.getLocalMember().getUuid();
 		String switchId = "";

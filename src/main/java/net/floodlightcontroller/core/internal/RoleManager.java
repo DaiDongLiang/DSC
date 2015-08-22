@@ -288,7 +288,7 @@ public class RoleManager {
             }
 
             for (OFSwitchHandshakeHandler h: getController().getSwitchService().getSwitchHandshakeHandlers()){
-            	if(clusterService.getMasterMap().containsKey(h.getDpid()))
+            	if(clusterService.getMasterMap().keySet().contains(h.getDpid()))
             		h.sendRoleRequest(OFControllerRole.ROLE_SLAVE);
             	else
             		h.sendRoleRequest(OFControllerRole.ROLE_MASTER);
