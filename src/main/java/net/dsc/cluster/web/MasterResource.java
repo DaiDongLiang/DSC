@@ -10,8 +10,8 @@ import org.restlet.resource.ServerResource;
 
 public class MasterResource extends ServerResource{
 	@Get("json")
-	public Map<String,String> masterMap(){
+	public Map<String,UUID> masterMap(){
         IClusterService clusterService = (IClusterService) getContext().getAttributes().get(IClusterService.class.getCanonicalName());
-        return clusterService.getMasterIPMapFromCS();
+        return clusterService.getMasterMapFromCS();
 	}
 }
