@@ -207,7 +207,18 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		}
 		return master;
 	}
-	
+	@Override
+	public Map<String, String> getMasterIPMapFromCS() {
+		Map<String, String> master=new HashMap<String, String>();
+		for(ControllerModel c:controllerMappingSwitch.keySet()){
+			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
+				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
+					master.put(s.getDpid(),c.getControllerIp());
+				}
+			}
+		}
+		return master;
+	}
 	// 控制器映射
 
 	@Override
