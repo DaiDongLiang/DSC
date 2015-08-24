@@ -10,13 +10,13 @@ import com.google.common.base.Objects;
 public class LinkModel implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-    @JsonProperty("src-switch")
+    @JsonProperty("src_switch")
 	private String src;
-    @JsonProperty("src-port")
+    @JsonProperty("src_port")
 	private Integer srcPort;
-    @JsonProperty("dst-switch")
+    @JsonProperty("dst_switch")
 	private String dst;
-    @JsonProperty("dst-port")
+    @JsonProperty("dst_port")
 	private Integer dstPort;
     
 	public LinkModel(String src, Integer srcPort, String dst, Integer dstPort) {
