@@ -198,7 +198,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		Map<String, UUID> master=new HashMap<String, UUID>();
 		for(ControllerModel c:controllerMappingSwitch.keySet()){
 			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
-				if(s.getRole().equals(OFControllerRole.ROLE_MASTER)){
+				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
 					master.put(s.getDpid(), UUID.fromString(c.getControllerId()));
 				}
 			}
