@@ -1,6 +1,8 @@
 package net.dsc.hazelcast.message;
 
-public class FlowMessage {
+import java.io.Serializable;
+
+public class FlowMessage implements Serializable{
 	public String json;
 	
 	

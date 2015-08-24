@@ -47,12 +47,11 @@
                 <multicast-port>54327</multicast-port>
             </multicast>
             <tcp-ip enabled="true">
-
-
-                <interface>192.168.99.136</interface>
+                <interface>192.168.150.1</interface>
                 <member-list>
-                    <member>192.168.99.136</member>
-                    <member>192.168.99.211</member>
+                    <member>192.168.150.1</member>
+                    <member>192.168.150.9</member>
+                    <member>192.168.150.7</member>
                 </member-list>
 
             </tcp-ip>
@@ -123,33 +122,10 @@
     </queue>
 
     
-    
-    <map name="master_map">
-        <in-memory-format>OBJECT</in-memory-format>
-
-        <backup-count>2</backup-count>
-
-
-        <time-to-live-seconds>0</time-to-live-seconds>
-
-        <max-idle-seconds>0</max-idle-seconds>
-
-        <eviction-policy>NONE</eviction-policy>
-
-        <max-size policy="PER_NODE">0</max-size>
-
-        <eviction-percentage>25</eviction-percentage>
-
-        <min-eviction-check-millis>100</min-eviction-check-millis>
-
-        <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
-
-    </map>
-    
     <map name="controller_load">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -170,7 +146,7 @@
         <map name="switchs">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -192,7 +168,7 @@
     <map name="controllers">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -212,12 +188,17 @@
     </map>
     
     <multimap name="controller_switch">
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
+        <value-collection-type>SET</value-collection-type>
+    </multimap>
+    
+     <multimap name="master_map">
+        <backup-count>3</backup-count>
         <value-collection-type>SET</value-collection-type>
     </multimap>
     
     <multimap name="switchlinks">
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
         <value-collection-type>SET</value-collection-type>
     </multimap>
 
