@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.model.ControllerModel;

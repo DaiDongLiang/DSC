@@ -191,6 +191,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		Map<String,Object> rawValues = new HashMap<String,Object>();
 		
 		String json = flowMessage.json;
+		System.out.println(json);
 		try {
 			rawValues = FlowEntryPushUtil.jsonToStorageEntry(json);
 			int state = FlowEntryPushUtil.checkFlow(rawValues);

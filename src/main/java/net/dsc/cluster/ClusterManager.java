@@ -184,8 +184,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	@Override
 	public void removeMasterMap(String dpid) {
-		if (masterMap.containsKey(dpid))
-			masterMap.remove(dpid);
+		masterMap.remove(dpid);
 	}
 	@Override
 	public IMap<String, String> getMasterMap() {
@@ -296,10 +295,10 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		switchService = context.getServiceImpl(IOFSwitchService.class);
 		restApiService = context.getServiceImpl(IRestApiService.class);
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
-		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
 		masterMap = hazelcast.getMap(MASTER_MAP);
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
+		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
 		System.out.println("controllers:"+controllers.values());
 		System.out.println("controllers-switch:"+controllerMappingSwitch.values());
@@ -330,8 +329,9 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);// 得到故障控制器控制的交换机
 		if (!load.isEmpty()&&uuid.equals(load.get(0))) {
 			for (SwitchConnectModel s : switchs) {// 遍历交换机
-				if(!s.getRole().equals(OFControllerRole.ROLE_MASTER)) continue;
+				if(!s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) continue;
 				DatapathId dpid = DatapathId.of(s.getDpid());
+				System.out.println(dpid);
 				removeMasterMap(dpid.toString());
 				for (int i = 0; i < load.size(); i++) {
 					if (isConnected(s.getDpid(), load.get(i))) {
