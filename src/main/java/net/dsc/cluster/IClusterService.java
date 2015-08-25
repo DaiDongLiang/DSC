@@ -29,7 +29,7 @@ public interface  IClusterService extends IFloodlightService{
 	//Master集合
 	public void putMasterMap(String dpid);
     public void removeMasterMap(String dpid);
-	public MultiMap<String, UUID> getMasterMap();
+	public IMap<String, String> getMasterMap();
 	public Map<String,UUID> getMasterMapFromCS();
 	public Map<String,String> getMasterIPMapFromCS();
 	//控制器负载集合

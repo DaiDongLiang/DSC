@@ -125,7 +125,7 @@ public class FlowEntryPusherResource extends ServerResource {
 		
 		IStorageSourceService storageSourceService = (IStorageSourceService)getContext()
 				.getAttributes().get(IStorageSourceService.class.getCanonicalName());
-		MultiMap<String, UUID> masterMap = clusterService.getMasterMap();
+		IMap<String, String> masterMap = clusterService.getMasterMap();
 
 		String localControllerId = hazelcastService.getLocalMember().getUuid();
 		String switchId = "";

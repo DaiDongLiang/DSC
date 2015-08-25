@@ -64,7 +64,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	private IMap<String, SwitchModel> switchs;
 	private MultiMap<ControllerModel, SwitchConnectModel> controllerMappingSwitch;
 	private IMap<String, Integer> controllerLoad;
-	private MultiMap<String, UUID> masterMap;
+	private IMap<String, String> masterMap;
 	private MultiMap<String, LinkModel> switchlinks;
 	public ClusterManager() {
 	}
@@ -178,11 +178,8 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 	//masterMap
 	@Override
 	public void putMasterMap(String dpid) {
-		if(masterMap.keySet().contains(dpid)){
-			masterMap.remove(dpid);
-		}
-		masterMap.put(dpid, UUID.fromString(floodlightProvider.getControllerModel()
-				.getControllerId()));
+		masterMap.put(dpid, floodlightProvider.getControllerModel()
+				.getControllerId());
 	}
 
 	@Override
@@ -191,7 +188,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 			masterMap.remove(dpid);
 	}
 	@Override
-	public MultiMap<String, UUID> getMasterMap() {
+	public IMap<String, String> getMasterMap() {
 		return masterMap;
 	}
 	
@@ -301,9 +298,15 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		controllers = hazelcast.getMap(CONTROLLER_MAP_NAME);
 		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		controllerLoad = hazelcast.getMap(CONTROLLER_LOAD_MAP_NAME);
-		masterMap = hazelcast.getMultiMap(MASTER_MAP);
+		masterMap = hazelcast.getMap(MASTER_MAP);
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
 		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
+		System.out.println("controllers:"+controllers.values());
+		System.out.println("controllers-switch:"+controllerMappingSwitch.values());
+		System.out.println("controllerLoad:"+controllerLoad.values());
+		System.out.println("master:"+masterMap.values());		
+		System.out.println("switchs:"+switchs.values());			
+		System.out.println("link:"+switchlinks.values());	
 	}
 
 	@Override
@@ -327,10 +330,11 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);// 得到故障控制器控制的交换机
 		if (!load.isEmpty()&&uuid.equals(load.get(0))) {
 			for (SwitchConnectModel s : switchs) {// 遍历交换机
+				if(!s.getRole().equals(OFControllerRole.ROLE_MASTER)) continue;
+				DatapathId dpid = DatapathId.of(s.getDpid());
+				removeMasterMap(dpid.toString());
 				for (int i = 0; i < load.size(); i++) {
-					if (s.getRole().equals(OFControllerRole.ROLE_MASTER.toString()) && isConnected(s.getDpid(), load.get(i))) {// 如果交换机角色MASTER并且负载最小的是自己.
-						DatapathId dpid = DatapathId.of(s.getDpid());
-						removeMasterMap(dpid.toString());
+					if (isConnected(s.getDpid(), load.get(i))) {
 						IOFSwitch sw = switchService.getSwitch(dpid);
 						log.info("change master {}<-->{}", uuid, dpid);
 						sw.writeRequest(sw.getOFFactory().buildRoleRequest()
