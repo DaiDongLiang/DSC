@@ -48,11 +48,12 @@
             </multicast>
             <tcp-ip enabled="true">
 
-                <interface>192.168.99.211</interface>
+                <interface>192.168.150.9</interface>
 
                 <member-list>
-                    <member>192.168.99.136</member>
-                    <member>192.168.99.211</member>
+                    <member>192.168.150.9</member>
+               
+                    <member>192.168.150.1</member>
                 </member-list>
             </tcp-ip>
             <aws enabled="false">
@@ -122,54 +123,13 @@
     </queue>
 
     
-    <map name="master">
-        <!--
-           Data type that will be used for storing recordMap.
-           Possible values:
-           BINARY (default): keys and values will be stored as binary data
-           OBJECT : values will be stored in their object forms
-           NATIVE : values will be stored in non-heap region of JVM
-        -->
-        <in-memory-format>OBJECT</in-memory-format>
-
-        <!--
-            Number of backups. If 1 is set as the backup-count for example,
-            then all entries of the map will be copied to another JVM for
-            fail-safety. 0 means no backup.
-        -->
-        <backup-count>2</backup-count>
-        <!--
-            Number of async backups. 0 means no backup.
-        -->
-
-        <!--
-			Maximum number of seconds for each entry to stay in the map. Entries that are
-			older than <time-to-live-seconds> and not updated for <time-to-live-seconds>
-			will get automatically evicted from the map.
-			Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
-		-->
-
-        <time-to-live-seconds>0</time-to-live-seconds>
-      
-        <max-idle-seconds>0</max-idle-seconds>
-     
-        <eviction-policy>NONE</eviction-policy>
-       
-        <max-size policy="PER_NODE">0</max-size>
-     
-        <eviction-percentage>25</eviction-percentage>
-       
-        <min-eviction-check-millis>100</min-eviction-check-millis>
-     
-        <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
-
-    </map>
+  
 
     
     <map name="controller_load">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -190,7 +150,7 @@
         <map name="switchs">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -212,7 +172,7 @@
     <map name="controllers">
         <in-memory-format>OBJECT</in-memory-format>
 
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
 
 
         <time-to-live-seconds>0</time-to-live-seconds>
@@ -232,12 +192,15 @@
     </map>
     
     <multimap name="controller_switch">
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
         <value-collection-type>SET</value-collection-type>
     </multimap>
-    
+       <multimap name="master_map">
+        <backup-count>3</backup-count>
+        <value-collection-type>SET</value-collection-type>
+    </multimap>
     <multimap name="switchlinks">
-        <backup-count>2</backup-count>
+        <backup-count>3</backup-count>
         <value-collection-type>SET</value-collection-type>
     </multimap>
 

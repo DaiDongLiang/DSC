@@ -127,14 +127,15 @@ public class FlowEntryPusherResource extends ServerResource {
 				.getAttributes().get(IStorageSourceService.class.getCanonicalName());
 		MultiMap<String, UUID> masterMap = clusterService.getMasterMap();
 
-		String localControllerId = hazelcastService.getLocalMember().getUuid();
+		String localControllerId = hazelcastService.getLocalMember().getUuid().toString();
 		String switchId = "";
 		Map<String, String> result = new HashMap<String, String>();
 		String status = "";
 		try {
 			switchId = getSwitchId(json);
 			if (masterMap.containsKey(switchId)) {// 如果交换机有主
-				String controllerId = masterMap.get(switchId).toString();
+				String controllerId = masterMap.get(switchId).();
+				System.out.println(controllerId+"==="+localControllerId);
 				if (controllerId.equals(localControllerId)) {// 如果请求的交换机的主是本地控制器
 					Map<String, Object> rowValues = FlowEntryPushUtil
 							.jsonToStorageEntry(json);
@@ -152,7 +153,7 @@ public class FlowEntryPusherResource extends ServerResource {
 
 				} else {// 如果请求的交换机不是本地控制器
 					hazelcastService.publishFlowMessage(new FlowMessage(json), controllerId);
-					result.put("status","流表已下发");
+					result.put("status","流表已下发至请求控制器");
 				
 
 				}

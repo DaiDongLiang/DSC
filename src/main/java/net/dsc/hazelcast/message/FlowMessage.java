@@ -1,6 +1,12 @@
 package net.dsc.hazelcast.message;
 
-public class FlowMessage {
+import java.io.Serializable;
+
+public class FlowMessage implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public String json;
 	
 	
