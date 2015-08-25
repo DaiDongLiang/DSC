@@ -30,7 +30,7 @@
 					<member>192.168.150.1</member>
 					<member>192.168.150.9</member>
 					<member>192.168.150.7</member>
-				
+
 				</member-list>
 			</tcp-ip>
 		</join>
@@ -118,7 +118,6 @@
 	<serialization>
 		<portable-version>0</portable-version>
 	</serialization>
-
 
     <services enable-defaults="true"/>
 </hazelcast>

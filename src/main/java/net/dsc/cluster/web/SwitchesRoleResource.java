@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.dsc.cluster.IClusterService;
 import net.dsc.cluster.model.ControllerModel;
@@ -161,7 +160,7 @@ public class SwitchesRoleResource extends ServerResource {
 		IMap<String, ControllerModel> controllers = clusterService
 				.getControllers();
 
-		IMap<String, String> masterMap = clusterService.getMasterMap();
+		Map<String, String> masterMap = clusterService.getMasterMap();
 
 		Map<String, String> retValue = new HashMap<String, String>();// 返回消息
 
