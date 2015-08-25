@@ -188,13 +188,14 @@ public class SwitchesRoleResource extends ServerResource {
 				if ("controllerId".equals(fieldName)) {
 					jp.nextToken();
 					controllerId = jp.getText();
+					
 
 				}
 
 				if ("role".equals(fieldName)) {
 					jp.nextToken();
 					role = jp.getText();
-
+					
 				}
 
 			}
@@ -202,16 +203,16 @@ public class SwitchesRoleResource extends ServerResource {
 		} catch (JsonParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			retValue.put("error", "can not parse json" + json);
+			retValue.put("error", "can not parse json1" + json);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			retValue.put("error", "can not parse json" + json);
+			retValue.put("error", "can not parse json2" + json);
 		}
 
 		if (controllerId == null || role == null) {// 解析错误
-
-			retValue.put("error", "can not parse json" + json);
+			
+			retValue.put("error", "can not parse json3" + json);
 			return retValue;
 
 		}
@@ -220,7 +221,7 @@ public class SwitchesRoleResource extends ServerResource {
 		isSwitchId = allSwitch.contains(switchId);
 
 		for (ControllerModel controller : ControllerMappingRole.keySet()) {// 判断controllerId是否存在
-			System.out.println(controller.getControllerId());
+			
 			if (controller.getControllerId().equals(controllerId)) {
 				isControllerId = true;
 				break;
@@ -233,16 +234,18 @@ public class SwitchesRoleResource extends ServerResource {
 		}
 
 		if (isControllerId && isSwitchId) {// 如果交换机和控制器都存在
+
 			DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
 			IOFSwitch sw = switchService.getSwitch(dpid);// 得到交换机
 			OFControllerRole controllerRole = parseRole(role);// 解析role
-			System.out.println(masterMap.values());
+			
 			if (switchHasMaster) {// 如果交换机有主
-
-				isControllerMasterSwitch = masterMap.get(switchId).equals(
+				String masterControllerId = masterMap.get(switchId).toString();
+System.out.println(masterControllerId);
+				isControllerMasterSwitch = masterControllerId.equals(
 						controllerId);
 
-				String masterControllerId = masterMap.get(switchId).toString();
+			
 
 				if (controllerId.equals(localId)) {// 判断请求id是否为本地id
 

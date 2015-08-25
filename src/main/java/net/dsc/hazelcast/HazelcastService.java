@@ -171,7 +171,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		}
 	}
 	@Override
-	public void progressRoleMessage(Message<RoleMessage> message) {
+	public void progressRoleMessage(Message<RoleMessage> message) {//处理角色请求订阅消息
 		RoleMessage roleMessage = message.getMessageObject();
 		String switchId = roleMessage.SwitchId;
 		DatapathId dpid = DatapathId.of(switchId);// 得到请求交换机机id
@@ -186,7 +186,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		
 	}
 	@Override
-	public void progressFlowMessage(Message<FlowMessage> Message) {
+	public void progressFlowMessage(Message<FlowMessage> Message) {//处理流表订阅消息
 		FlowMessage flowMessage = Message.getMessageObject();
 		Map<String,Object> rawValues = new HashMap<String,Object>();
 		
