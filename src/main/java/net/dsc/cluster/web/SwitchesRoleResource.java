@@ -180,7 +180,7 @@ public class SwitchesRoleResource extends ServerResource {
 		JsonParser jp = null;
 		String role = null;
 		String controllerId = null;
-
+		System.out.println("sss");
 		try {
 			jp = f.createJsonParser(json);
 			while (jp.nextToken() != JsonToken.END_OBJECT) {
@@ -188,13 +188,14 @@ public class SwitchesRoleResource extends ServerResource {
 				if ("controllerId".equals(fieldName)) {
 					jp.nextToken();
 					controllerId = jp.getText();
-					
+					System.out.println(controllerId);
 
 				}
 
 				if ("role".equals(fieldName)) {
 					jp.nextToken();
 					role = jp.getText();
+					System.out.println(role);
 					
 				}
 
@@ -240,6 +241,7 @@ public class SwitchesRoleResource extends ServerResource {
 			OFControllerRole controllerRole = parseRole(role);// 解析role
 			
 			if (switchHasMaster) {// 如果交换机有主
+				
 				String masterControllerId = masterMap.get(switchId).toString();
 System.out.println(masterControllerId);
 				isControllerMasterSwitch = masterControllerId.equals(
