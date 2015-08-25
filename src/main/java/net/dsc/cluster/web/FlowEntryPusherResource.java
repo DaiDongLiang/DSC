@@ -131,11 +131,15 @@ public class FlowEntryPusherResource extends ServerResource {
 		String switchId = "";
 		Map<String, String> result = new HashMap<String, String>();
 		String status = "";
+		result.put("status",status);
+		
 		try {
 			switchId = getSwitchId(json);
+			System.out.println(masterMap.containsKey(switchId));
 			if (masterMap.containsKey(switchId)) {// 如果交换机有主
 				String controllerId = masterMap.get(switchId);
 				System.out.println(controllerId+"==="+localControllerId);
+				
 				if (controllerId.equals(localControllerId)) {// 如果请求的交换机的主是本地控制器
 					Map<String, Object> rowValues = FlowEntryPushUtil
 							.jsonToStorageEntry(json);
@@ -178,7 +182,7 @@ public class FlowEntryPusherResource extends ServerResource {
 	
 
 	private String getSwitchId(String fmJson) throws IOException {
-
+		System.out.println(fmJson);
 		MappingJsonFactory f = new MappingJsonFactory();
 		JsonParser jp;
 		String requestSwitch = "";
@@ -204,6 +208,7 @@ public class FlowEntryPusherResource extends ServerResource {
 			switch (n) {
 			case StaticFlowEntryPusher.COLUMN_SWITCH:
 				requestSwitch = jp.getText();
+				System.out.println(requestSwitch);
 				return requestSwitch;
 
 			}
