@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import net.dsc.cluster.model.ControllerModel;
 import net.dsc.cluster.model.LinkModel;
@@ -184,37 +183,38 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 
 	@Override
 	public void removeMasterMap(String dpid) {
-		masterMap.remove(dpid);
+//		ControllerModel uuid=floodlightProvider.getControllerModel();
+//		masterMap.remove(dpid);
 	}
 	@Override
-	public IMap<String, String> getMasterMap() {
-		return masterMap;
+	public Map<String, String> getMasterMap() {
+		return getMasterMapFromCS();
 	}
 	
 	@Override
-	public Map<String, UUID> getMasterMapFromCS() {
-		Map<String, UUID> master=new HashMap<String, UUID>();
-		for(ControllerModel c:controllerMappingSwitch.keySet()){
-			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
-				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
-					master.put(s.getDpid(), UUID.fromString(c.getControllerId()));
-				}
-			}
-		}
-		return master;
-	}
-	@Override
-	public Map<String, String> getMasterIPMapFromCS() {
+	public Map<String, String> getMasterMapFromCS() {
 		Map<String, String> master=new HashMap<String, String>();
 		for(ControllerModel c:controllerMappingSwitch.keySet()){
 			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
 				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
-					master.put(s.getDpid(),c.getControllerIp());
+					master.put(s.getDpid(),c.getControllerId());
 				}
 			}
 		}
 		return master;
 	}
+	
+//	public Map<String, String> getMasterIPMapFromCS() {
+//		Map<String, String> master=new HashMap<String, String>();
+//		for(ControllerModel c:controllerMappingSwitch.keySet()){
+//			for(SwitchConnectModel s:controllerMappingSwitch.get(c)){
+//				if(s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())){
+//					master.put(s.getDpid(),c.getControllerIp());
+//				}
+//			}
+//		}
+//		return master;
+//	}
 	// 控制器映射
 
 	@Override
@@ -300,12 +300,13 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
 		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
+		
 		System.out.println("controllers:"+controllers.values());
-		System.out.println("controllers-switch:"+controllerMappingSwitch.values());
 		System.out.println("controllerLoad:"+controllerLoad.values());
-		System.out.println("master:"+masterMap.values());		
-		System.out.println("switchs:"+switchs.values());			
-		System.out.println("link:"+switchlinks.values());	
+		System.out.println("masterMap:"+masterMap.values());
+		System.out.println("switchs:"+switchs.values());
+		System.out.println("controllerMappingSwitch:"+controllerMappingSwitch.values());	
+		System.out.println("switchlinks:"+switchlinks.values());	
 	}
 
 	@Override
@@ -331,8 +332,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 			for (SwitchConnectModel s : switchs) {// 遍历交换机
 				if(!s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) continue;
 				DatapathId dpid = DatapathId.of(s.getDpid());
-				System.out.println(dpid);
-				removeMasterMap(dpid.toString());
+//				removeMasterMap(dpid.toString());
 				for (int i = 0; i < load.size(); i++) {
 					if (isConnected(s.getDpid(), load.get(i))) {
 						IOFSwitch sw = switchService.getSwitch(dpid);

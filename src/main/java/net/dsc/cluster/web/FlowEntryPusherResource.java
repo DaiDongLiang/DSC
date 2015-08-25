@@ -3,7 +3,6 @@ package net.dsc.cluster.web;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import net.dsc.cluster.IClusterService;
 import net.dsc.hazelcast.IHazelcastService;
@@ -22,9 +21,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.google.common.collect.Multimap;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.MultiMap;
 
 public class FlowEntryPusherResource extends ServerResource {
 
@@ -125,7 +121,7 @@ public class FlowEntryPusherResource extends ServerResource {
 		
 		IStorageSourceService storageSourceService = (IStorageSourceService)getContext()
 				.getAttributes().get(IStorageSourceService.class.getCanonicalName());
-		IMap<String, String> masterMap = clusterService.getMasterMap();
+		Map<String, String> masterMap = clusterService.getMasterMap();
 
 		String localControllerId = hazelcastService.getLocalMember().getUuid().toString();
 		String switchId = "";
