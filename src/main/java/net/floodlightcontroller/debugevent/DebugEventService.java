@@ -706,7 +706,7 @@ public class DebugEventService implements IFloodlightModule, IDebugEventService 
     public void startUp(FloodlightModuleContext context) {
         IShutdownService shutdownService =
                 context.getServiceImpl(IShutdownService.class);
-        shutdownService.registerShutdownListener(new ShutdownListenenerDelegate());
+//        shutdownService.registerShutdownListener(new ShutdownListenenerDelegate());
         DebugEventAppender.setDebugEventServiceImpl(this);
     }
 }
