@@ -11,7 +11,9 @@ import net.dsc.hazelcast.listener.FlowMessageListener;
 import net.dsc.hazelcast.listener.RoleMessageListener;
 import net.dsc.hazelcast.message.FlowMessage;
 import net.dsc.hazelcast.message.RoleMessage;
+import net.dsc.hazelcast.message.ShutDownMessage;
 import net.floodlightcontroller.core.IOFSwitch;
+import net.floodlightcontroller.core.IShutdownService;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
@@ -54,6 +56,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 	private HazelcastInstance client = null;
 	private static IStorageSourceService storageSourceService = null;
 	private static IOFSwitchService switchService = null;
+	private static IShutdownService shutService=null;
 
 	@Override
 	public <K, V> IMap<K,V> getMap(String MapName) {
@@ -102,6 +105,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
 		l.add(IOFSwitchService.class);
 		l.add(IStorageSourceService.class);
+		l.add(IShutdownService.class);
 		return l;
 	}
 	//test
@@ -112,6 +116,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		switchService = context.getServiceImpl(IOFSwitchService.class);
 		storageSourceService = context.getServiceImpl(IStorageSourceService.class);
 		hazelcastInstance = HazelcastManager.getHazelcastInstance();
+		shutService=context.getServiceImpl(IShutdownService.class);
 		client = HazelcastManager.getHazelcastClient();
 	}
 
@@ -132,6 +137,18 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		topic.publish(flowMessage);
 	}
 	
+	@Override
+	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId) {
+		ITopic<RoleMessage> topic = client.getTopic(ControllerId);
+		topic.publish(roleMessage);
+	}
+	
+	@Override
+	public void publishShutMessage(ShutDownMessage shutmessage,
+			String controllerId) {
+		ITopic<ShutDownMessage> topic = client.getTopic(controllerId);
+		topic.publish(shutmessage);
+	}
 	
 	@Override
 	public Member getLocalMember() {
@@ -144,11 +161,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		HazelcastListenerManager.addMemberListener(mebershipListener);	
 	}
 	
-	@Override
-	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId) {
-		ITopic<RoleMessage> topic = client.getTopic(ControllerId);
-		topic.publish(roleMessage);
-	}
+
 	
 	
 
@@ -199,11 +212,15 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 				storageSourceService.insertRowAsync(StaticFlowEntryPusher.TABLE_NAME, rawValues);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+	@Override
+	public void progressShutDownMessage(Message<ShutDownMessage> flowMessage) {
+		log.info("shutdown DSC");
+		getInstance().shutdown();
+		shutService.terminate("shutdown", 0);
+	}
 	@Override
 	public HazelcastInstance getInstance() {
 		return HazelcastManager.getHazelcastInstance();

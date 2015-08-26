@@ -1,6 +1,7 @@
 package net.dsc.cluster.web;
 
 import net.dsc.hazelcast.IHazelcastService;
+import net.dsc.hazelcast.message.ShutDownMessage;
 import net.floodlightcontroller.core.IShutdownService;
 
 import org.restlet.resource.Get;
@@ -11,8 +12,7 @@ public class ShutDownResource extends ServerResource{
 	public void shutdown(){
         IHazelcastService hazelcastService = (IHazelcastService) getContext().getAttributes().get(IHazelcastService.class.getCanonicalName());
         IShutdownService shutService = (IShutdownService) getContext().getAttributes().get(IShutdownService.class.getCanonicalName());
-        hazelcastService.getInstance().shutdown();
-        shutService.terminate("test", 0);
-//        System.exit(0);
+		String controllerId = (String) getRequestAttributes().get("controllerId");
+		hazelcastService.publishShutMessage(new ShutDownMessage(), controllerId);
 	}
 }
