@@ -4,6 +4,7 @@ import net.dsc.hazelcast.message.FlowMessage;
 import net.dsc.hazelcast.message.RoleMessage;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
@@ -30,4 +31,6 @@ public interface IHazelcastService extends IFloodlightService{
 	public void addMemberListener(MembershipListener mebershipListener);
 	
 	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId);
+	
+	public HazelcastInstance getInstance();
 }
