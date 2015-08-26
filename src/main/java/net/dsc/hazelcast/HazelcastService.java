@@ -9,6 +9,7 @@ import java.util.Map;
 import net.dsc.cluster.web.FlowEntryPushUtil;
 import net.dsc.hazelcast.listener.FlowMessageListener;
 import net.dsc.hazelcast.listener.RoleMessageListener;
+import net.dsc.hazelcast.listener.ShutDownMessageListener;
 import net.dsc.hazelcast.message.FlowMessage;
 import net.dsc.hazelcast.message.RoleMessage;
 import net.dsc.hazelcast.message.ShutDownMessage;
@@ -128,6 +129,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 		
 		HazelcastListenerManager.addMessageListener(getLocalMember().getUuid(), new RoleMessageListener(this));
 		HazelcastListenerManager.addMessageListener(getLocalMember().getUuid()+"flow", new FlowMessageListener(this));
+		HazelcastListenerManager.addMessageListener(getLocalMember().getUuid()+"shutdown", new ShutDownMessageListener(this));
 		
 	}
 	
@@ -146,7 +148,7 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 	@Override
 	public void publishShutMessage(ShutDownMessage shutmessage,
 			String controllerId) {
-		ITopic<ShutDownMessage> topic = client.getTopic(controllerId);
+		ITopic<ShutDownMessage> topic = client.getTopic(controllerId+"shutdown");
 		topic.publish(shutmessage);
 	}
 	
@@ -215,12 +217,14 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 			e.printStackTrace();
 		}
 	}
+	
 	@Override
-	public void progressShutDownMessage(Message<ShutDownMessage> flowMessage) {
+	public void progressShutDownMessage(Message<ShutDownMessage> shutMessage) {
 		log.info("shutdown DSC");
 		getInstance().shutdown();
 		shutService.terminate("shutdown", 0);
 	}
+	
 	@Override
 	public HazelcastInstance getInstance() {
 		return HazelcastManager.getHazelcastInstance();
