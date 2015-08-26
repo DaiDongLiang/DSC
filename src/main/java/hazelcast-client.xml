@@ -5,9 +5,12 @@
 
 	<network>
 		<cluster-members>
+			<address>127.0.0.1</address>
+			<!-- 
+			<address>192.168.150.7</address>
 			<address>192.168.150.1</address>
 			<address>192.168.150.9</address>
-			<address>192.168.150.7</address>
+			 -->
 		</cluster-members>
 		<smart-routing>true</smart-routing>
 		<redo-operation>true</redo-operation>

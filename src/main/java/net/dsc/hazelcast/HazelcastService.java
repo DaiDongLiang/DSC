@@ -202,9 +202,12 @@ public class HazelcastService implements IHazelcastService,IFloodlightModule,IMe
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
 	}
+	
+	@Override
+	public HazelcastInstance getInstance() {
+		return HazelcastManager.getHazelcastInstance();
+	};
 }
 	
 
