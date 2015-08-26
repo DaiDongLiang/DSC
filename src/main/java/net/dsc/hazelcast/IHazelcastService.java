@@ -2,6 +2,7 @@ package net.dsc.hazelcast;
 
 import net.dsc.hazelcast.message.FlowMessage;
 import net.dsc.hazelcast.message.RoleMessage;
+import net.dsc.hazelcast.message.ShutDownMessage;
 import net.floodlightcontroller.core.module.IFloodlightService;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -24,13 +25,15 @@ public interface IHazelcastService extends IFloodlightService{
 	
 	public <T> IList<T>  getList(String ListName);
 	
-	public void publishFlowMessage(FlowMessage flowMessage,String ControllerId);
-	
 	public Member getLocalMember();
 	
 	public void addMemberListener(MembershipListener mebershipListener);
 	
+	public void publishFlowMessage(FlowMessage flowMessage,String ControllerId);
+
 	public void publishRoleMessage(RoleMessage roleMessage,String ControllerId);
+	
+	public void publishShutMessage(ShutDownMessage shutmessage,String controllerId);
 	
 	public HazelcastInstance getInstance();
 }

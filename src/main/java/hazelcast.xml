@@ -25,21 +25,20 @@
 		</outbound-ports>
 		<join>
 			<tcp-ip enabled="true">
-						
-				<!-- <interface>192.168.150.9</interface>
+
+
+				<interface>192.168.150.9</interface>
+
 				<member-list>
 					<member>192.168.150.1</member>
+				<!-- 	<member>192.168.150.7</member> -->
 					<member>192.168.150.9</member>
 
-				 	<member>192.168.150.7</member>  -->
-				 	<interface>127.0.0.1</interface>
-				 	<member-list>
-				 		<member>127.0.0.1</member>
-				 	</member-list>
 
+				
+				 	
+				</member-list>
 
-				<!-- </member-list> -->
-					
 			</tcp-ip>
 		</join>
 		

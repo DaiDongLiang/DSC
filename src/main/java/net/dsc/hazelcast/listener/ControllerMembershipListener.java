@@ -25,9 +25,16 @@ public class ControllerMembershipListener implements MembershipListener {
 
 	@Override
 	public void memberRemoved(MembershipEvent event) {
+<<<<<<< HEAD
 		    long begin = System.currentTimeMillis();
 			cluster.controllerRemoved(event);
 			System.out.println("translation time:"+(System.currentTimeMillis()-begin));
+=======
+			long begin =System.currentTimeMillis();
+			cluster.controllerRemoved(event);
+			long end=System.currentTimeMillis();
+			System.out.println("translation time:"+(end-begin));
+>>>>>>> 7d6d8fbe50f08a399623b9cec4388da385a7fbbd
 	}
 
 }

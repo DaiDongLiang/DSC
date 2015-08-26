@@ -329,7 +329,7 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		ControllerModel c = controllers.get(m.getUuid());// 得到故障控制器模型
 		Collection<SwitchConnectModel> switchs = controllerMappingSwitch.get(c);// 得到故障控制器控制的交换机
 		if (!load.isEmpty()&&uuid.equals(load.get(0))) {
-			for (SwitchConnectModel s : switchs) {// 遍历交换机
+			for (SwitchConnectModel s : switchs) {// 遍历交换机a
 				if(!s.getRole().equals(OFControllerRole.ROLE_MASTER.toString())) continue;
 				DatapathId dpid = DatapathId.of(s.getDpid());
 //				removeMasterMap(dpid.toString());
