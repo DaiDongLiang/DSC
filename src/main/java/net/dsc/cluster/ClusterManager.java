@@ -300,13 +300,12 @@ public class ClusterManager implements IFloodlightModule, IClusterService,
 		switchs = hazelcast.getMap(SWITCHS_MAP_NAME);
 		controllerMappingSwitch = hazelcast.getMultiMap(CONTROLLER_SWITCH_MULITMAP_NAME);
 		switchlinks=hazelcast.getMultiMap(SWITCHS_LINKS_MULITMAP_NAME);
-		
-//		System.out.println("controllers:"+controllers.values());
-//		System.out.println("controllerLoad:"+controllerLoad.values());
-//		System.out.println("masterMap:"+masterMap.values());
-//		System.out.println("switchs:"+switchs.values());
-//		System.out.println("controllerMappingSwitch:"+controllerMappingSwitch.values());	
-//		System.out.println("switchlinks:"+switchlinks.values());	
+		/*System.out.println("controllers:"+controllers.values());
+		System.out.println("controllerLoad:"+controllerLoad.values());
+		System.out.println("masterMap:"+masterMap.values());
+		System.out.println("switchs:"+switchs.values());
+		System.out.println("controllerMappingSwitch:"+controllerMappingSwitch.values());	
+		System.out.println("switchlinks:"+switchlinks.values());	*/
 	}
 
 	@Override
