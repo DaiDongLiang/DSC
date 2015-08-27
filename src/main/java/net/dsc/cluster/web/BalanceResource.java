@@ -26,6 +26,8 @@ public class BalanceResource extends ServerResource{
         
         Map<String, String> master=clusterService.getMasterMapFromCS();
         List<String> dpidList=Lists.newArrayList(master.keySet());
+        
+        log.info(dpidList.toString());
         List<String> uuidList= Lists.newArrayList(clusterService.getControllers().keySet());
         for(String u:uuidList){
         	clusterService.ControllerLoadReset(u);
@@ -33,10 +35,19 @@ public class BalanceResource extends ServerResource{
         
         for(Map.Entry<String, String> m:master.entrySet()){//将所有主控变为从控
        		hazelcastService.publishRoleMessage(new RoleMessage("SLAVE", m.getKey()),m.getValue().toString());	
+           try {
+			Thread.sleep(150);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         }
+        log.info(clusterService.getControllerMappingSwitch().entrySet().toString());
         for(int i=0;i<dpidList.size();i++){
         	int length=uuidList.size();
         	for(int index=0;index<length;index++){
+        		log.info(dpidList.get(i)+"---------"+uuidList.get(index));
+        		System.out.println(clusterService.isConnected(dpidList.get(i), uuidList.get(index)));
         		if(clusterService.isConnected(dpidList.get(i), uuidList.get(index))){
         			hazelcastService.publishRoleMessage(new RoleMessage("MASTER", dpidList.get(i)), uuidList.get(index));
 					log.info("change master {}<-->{}", uuidList.get(index),  dpidList.get(i));

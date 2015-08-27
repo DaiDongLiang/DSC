@@ -282,7 +282,7 @@ public class DebugCounterServiceImpl implements IFloodlightModule, IDebugCounter
    public void startUp(FloodlightModuleContext context) {
        IShutdownService shutdownService =
                context.getServiceImpl(IShutdownService.class);
-       shutdownService.registerShutdownListener(new ShutdownListenenerDelegate());
+//       shutdownService.registerShutdownListener(new ShutdownListenenerDelegate());
    }
 
 }
