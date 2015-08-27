@@ -26,13 +26,19 @@ public class BalanceResource extends ServerResource{
         
         Map<String, String> master=clusterService.getMasterMapFromCS();
         List<String> dpidList=Lists.newArrayList(master.keySet());
+        log.info(dpidList.toString());
         List<String> uuidList= Lists.newArrayList(clusterService.getControllers().keySet());
         for(String u:uuidList){
         	clusterService.ControllerLoadReset(u);
         }
         
         for(Map.Entry<String, String> m:master.entrySet()){//将所有主控变为从控
-       		hazelcastService.publishRoleMessage(new RoleMessage("SLAVE", m.getKey()),m.getValue().toString());	
+       		hazelcastService.publishRoleMessage(new RoleMessage("SLAVE", m.getKey()),m.getValue().toString());
+       		try {
+				Thread.sleep(150);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
         }
         for(int i=0;i<dpidList.size();i++){
         	int length=uuidList.size();
